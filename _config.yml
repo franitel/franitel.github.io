@@ -19,3 +19,5 @@ github_username:  franitel
 
 # Build settings
 markdown: kramdown
+theme: jekyll-theme-hacker
+
