@@ -1,0 +1,60 @@
+[
+  
+  {
+    "title"    : "kubernetes Credentials and Secrets",
+    "category" : "",
+    "tags"     : "k8s, kubernetes",
+    "url"      : "/kubernetes/2016/03/08/k8s-credentials-and-secrets/",
+    "date"     : "2016-03-08 00:00:00 +0100"
+    } ,
+    
+  {
+    "title"    : "kubernetes Basic deployment (namespace and resource limitation)",
+    "category" : "",
+    "tags"     : "k8s, nginx, namespace",
+    "url"      : "/kubernetes/2016/02/12/kubernetes-basic-deployment/",
+    "date"     : "2016-02-12 00:00:00 +0100"
+    } ,
+    
+  {
+    "title"    : "Kubernetes Dashboard.",
+    "category" : "",
+    "tags"     : "k8s",
+    "url"      : "/k8s/2016/02/11/kubernetes-dashboard/",
+    "date"     : "2016-02-11 00:00:00 +0100"
+    } ,
+    
+  {
+    "title"    : "Basic kubernetes setup.",
+    "category" : "",
+    "tags"     : "k8s",
+    "url"      : "/k8s/2016/02/10/basic-kubernetes-setup/",
+    "date"     : "2016-02-10 14:03:11 +0100"
+    } ,
+    
+  {
+    "title"    : "Deploy Docker Swarm cluster multi-master.",
+    "category" : "",
+    "tags"     : "docker, swarm",
+    "url"      : "/docker/2016/01/23/deploy-docker-swarm-cluster/",
+    "date"     : "2016-01-23 00:00:00 +0100"
+    } ,
+    
+  {
+    "title"    : "Docker-Machine Static IP Address.",
+    "category" : "",
+    "tags"     : "kvm, docker, docker-machine",
+    "url"      : "/kvm/2015/09/07/docker-machine-static-ip/",
+    "date"     : "2015-09-07 00:00:00 +0200"
+    } ,
+    
+  {
+    "title"    : "Docker-Machine with kvm driver.",
+    "category" : "",
+    "tags"     : "kvm",
+    "url"      : "/kvm/2015/09/06/docker-machine-with-kvm-driver/",
+    "date"     : "2015-09-06 00:00:00 +0200"
+    } 
+    
+  ]
+

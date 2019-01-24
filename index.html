@@ -2,26 +2,82 @@
 layout: default
 ---
 
-<div class="home">
 
-  <h1 class="page-heading">Posts
-  {% if site.google_analytics and jekyll.environment == 'production' %}
-  {% include analytics.html %}
-  {% endif %}  
-  </h1>
+<div class="container-fluid index">
+    <div class="row">
 
-  <ul class="post-list">
-    {% for post in site.posts %}
-      <li>
-        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+        <div class="col-md-12 main content-panel">
 
-        <h2>
-          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-        </h2>
-      </li>
-    {% endfor %}
-  </ul>
+            <div class="gravatar">
+                <img src="{{ site.title_image }}" class="img-circle about-image" height="150" width="150" alt="{{ site.title }}" />
+            </div>
 
-  <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
+            <h2 class="header author-header" itemprop="headline">{{ site.title }}
+             {% if site.google_analytics and jekyll.environment == 'production' %}
+             {% include analytics.html %}
+             {% endif %}
+            </h2>
+            <div class="author-text">
+                {{ site.title_description }}
+            </div>
+            <div class="row text-center">
+              <div class="col-md-4"><h4><a href="./about">Posts</a></h4></div>
+              <div class="col-md-4"><h2><a href="./about">About</a></h2></div>
+              <div class="col-md-4"><h4><a href="./about">Search</a></h4></div>
+            </div>
 
+            <div class="links">
+                {% if site.twitter_username %}<a href="http://www.twitter.com/{{ site.twitter_username }}" target="_new"><i class="fa fa-twitter fa-2x"></i></a>{% endif %}
+                {% if site.email %}<a href="mailto:{{ site.email }}" target="_new"><i class="fa fa-envelope fa-2x"></i></a>{% endif %}
+                {% if site.linkedin_link %}<a href="{{ site.linkedin_link }}" target="_new"><i class="fa fa-linkedin fa-2x"></i></a>{% endif %}
+                {% if site.google_plus_link %}<a href="{{ site.google_plus_link }}" target="_new"><i class="fa fa-google-plus fa-2x"></i></a>{% endif %}
+                {% if site.github_username %}<a href="https://github.com/{{ site.github_username }}" target="_new"><i class="fa fa-github-alt fa-2x"></i></a>{% endif %}
+                {% if site.duolingo_username %}<a href="https://duolingo.com/{{site.duolingo_username }}" target="_new"><img src="http://i.imgur.com/S5sSQMC.png" class="fa fa-duolingo" alt="duolingo icon"></a>{% endif %}
+                {% if site.stackoverflow_link %}<a href="{{ site.stackoverflow_link }}" target="_new"><i class="fa fa-stack-overflow fa-2x"></i></a>{% endif %}
+                {% if site.codepen_username %}<a href="https://codepen.io/{{site.codepen_username }}" target="_new"><i class="fa fa-codepen fa-2x"></i></a>{% endif %}
+           </div>
+          </div>
+          <div class="col-md-12 main content-panel">
+
+            <div class="articles">
+
+              <h2>LATEST POSTS</h2>
+
+              <ul>
+                  {% for post in site.posts | limit: site.post_limit %}
+
+                      <li>
+                          <a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+                          <small class="hidden-xs">
+                            <!-- Snippet para establecer meses a español -->
+                            {% assign m = post.date | page.date | date: "%-m" %}
+                            {% case m %}
+                              {% when '1' %}January
+                              {% when '2' %}February
+                              {% when '3' %}March
+                              {% when '4' %}April
+                              {% when '5' %}May
+                              {% when '6' %}June
+                              {% when '7' %}July
+                              {% when '8' %}August
+                              {% when '9' %}September
+                              {% when '10' %}October
+                              {% when '11' %}November
+                              {% when '12' %}December
+                            {% endcase %}
+                            {{post.date | page.date | date: "%-d" }}, {{post.date | page.date | date: "%Y" }}
+                          </small>
+                      </li>
+
+                  {% endfor %}
+                  <li>
+                      <small><i><a href="/posts/">next...</a></i></small>
+                  </li>
+              </ul>
+
+            </div>
+
+        </div>
+
+    </div>
 </div>

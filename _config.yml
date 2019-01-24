@@ -1,23 +1,41 @@
-# Welcome to Jekyll!
-#
-# This config file is meant for settings that affect your whole blog, values
-# which you are expected to set up once and rarely need to edit after that.
-# For technical reasons, this file is *NOT* reloaded automatically when you use
-# 'jekyll serve'. If you change this file, please restart the server process.
-
 # Site settings
-title: Sysadmin Blog
+title: Sysops Blog
 email: franitel@hotmail.com
-description: > # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://franitel.github.io" # the base hostname & protocol for your site
+
+description: "Un espacio para compartir"
+baseurl: ""
+url: ""
+title_description: "What we know is a drop, what we don't know is an ocean. -Isaac Newton."
+title_image: "images/avatar.jpg"
+google_analytics: "UA-132425582-1"
+disqus_account: "franitel-github-io" 
+github_repository: https://github.com/franitel/franitel.github.io
+addthis_id: "1668b6c5"
+post_limit: 5
+
+# Social usernames/URLs
 twitter_username: 
 github_username:  franitel
-google_analytics: "UA-132425582-1"
+codepen_username: 
+#duolingo_username: franitel
+linkedin_link: 
+google_plus_link: 
+stackoverflow_link: 
+
+# Footer
+# footer_left: "Made with <i class=\"fa fa-heart\"></i> by <a href=\"https://twitter.com/_JacobTomlinson\">Jacob Tomlinson</a>"
+#footer_right: "&lt;/&gt; on <a href=\"https://github.com/jacobtomlinson/carte-noire\">Github</a> &nbsp;<i class=\"fa fa-github-alt\"></i>"
+footer_left: "Francisco José Rodríguez Rubio <i class=\"fa fa-coffee\"></i> Personal Blog</a>"
+footer_right: "Learning Brings Happiness, Sharing Makes a Better World"
 # Build settings
 markdown: kramdown
-theme: jekyll-theme-hacker
-
+# highlighter: pygments
+highlighter: rouge
+kramdown:
+  input: GFM
+permalink: pretty
+exclude: [vendor]
+#Variables personales
+keep_files: [about] #Mantener directorios y archivos
+timezone: Europe/Madrid
+# lang: es
