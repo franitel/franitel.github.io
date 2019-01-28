@@ -5,9 +5,75 @@
     <description>Un espacio para compartir</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 24 Jan 2019 15:46:58 +0100</pubDate>
-    <lastBuildDate>Thu, 24 Jan 2019 15:46:58 +0100</lastBuildDate>
+    <pubDate>Mon, 28 Jan 2019 10:42:15 +0100</pubDate>
+    <lastBuildDate>Mon, 28 Jan 2019 10:42:15 +0100</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
+    
+      <item>
+        <title>Openshift: Create project, Deploy and Expose an APP.</title>
+        <description>&lt;h3 id=&quot;requirements&quot;&gt;Requirements:&lt;/h3&gt;
+&lt;p&gt;For this example you need openshift origin (okd) deployed locally, with access to the oc command.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;1) Create project (fran-project)&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-project fran-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;2) select the project&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc project fran-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;3) Deploy an app in fran-project&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-app kubernetes/guestbook --name=guestbook
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;4) Create route to expose our app&lt;/p&gt;
+
+&lt;p&gt;vim route-guestbook.yaml&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: guestbook
+  name: guestbook
+  namespace: fran-project
+  selfLink: /apis/route.openshift.io/v1/namespaces/fran-project/routes/guestbook
+spec:
+  host: guestbook-fran-project.127.0.0.1.nip.io
+  port:
+    targetPort: 3000-tcp
+  to:
+    kind: Service
+    name: guestbook
+    weight: 100
+  wildcardPolicy: None
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Create the route:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc create -f route-guestbook.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;5) Go to &lt;a href=&quot;http://guestbook-fran-project.127.0.0.1.nip.io&quot;&gt;http://guestbook-fran-project.127.0.0.1.nip.io&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;then you will see:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2016-04-01-openshift-deploy-app.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Fri, 01 Apr 2016 00:00:00 +0200</pubDate>
+        <link>/openshift/2016/04/01/openshift-deploy-app/</link>
+        <guid isPermaLink="true">/openshift/2016/04/01/openshift-deploy-app/</guid>
+        
+        <category>openshift</category>
+        
+        
+        <category>openshift</category>
+        
+      </item>
     
       <item>
         <title>kubernetes Credentials and Secrets</title>

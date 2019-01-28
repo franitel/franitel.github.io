@@ -4,7 +4,7 @@
     <head>
 <meta charset="" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Docker-Machine Static IP Address.</title>
+<title>Openshift: Create project, Deploy and Expose an APP.</title>
 <meta name="description" content="Un espacio para compartir">
 
 <link rel="profile" href="http://gmpg.org/xfn/11" />
@@ -77,11 +77,11 @@
     <div itemscope itemtype="http://schema.org/Article" class="col-md-12 article">
       
       <div class="thumb">
-        <i class="fa fa-kvm fa-4x"></i>
+        <i class="fa fa-openshift fa-4x"></i>
       </div>
       
 
-      <h1 class="header" itemprop="name">Docker-Machine Static IP Address.</h1>
+      <h1 class="header" itemprop="name">Openshift: Create project, Deploy and Expose an APP.</h1>
 
       <div class="author">
         <small><i>
@@ -98,12 +98,12 @@
           <span itemprop="datePublished" content="2014-08-28">
             <!-- Snippet para establecer meses a español -->
             
-            September
+            April
               
-            7
-             , 2015
+            1
+             , 2016
           </span>
-          in kvm category.
+          in openshift category.
         </i></small>
       </div>
 
@@ -116,21 +116,58 @@
       <div class="content-panel content">
       
 
-        <span itemprop="articleBody"><p>In this case we are going to modify the bootlocal.sh script to use static ip addres in vm generated using docker-machine.</p>
+        <span itemprop="articleBody"><h3 id="requirements">Requirements:</h3>
+<p>For this example you need openshift origin (okd) deployed locally, with access to the oc command.</p>
 
-<h2 id="static-ip-address">Static IP Address:</h2>
+<hr />
 
-<p>Connect to the server and edit the bootlocal.sh file:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-machine ssh swarm-master1
-vi /var/lib/boot2docker/bootlocal.sh
+<p>1) Create project (fran-project)</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc new-project fran-project
 </code></pre></div></div>
-<p>Modify the bootlocal.sh script:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
-<span class="nb">kill cat</span> /var/run/udhcpc.eth0.pid
-ifconfig eth2 172.26.100.101 netmask 255.255.255.0 up
-<span class="nb">kill cat</span> /var/run/udhcpc.eth1.pid
-ifconfig eth0 192.168.17.101 netmask 255.255.255.0 up
+
+<p>2) select the project</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc project fran-project
 </code></pre></div></div>
+
+<p>3) Deploy an app in fran-project</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc new-app kubernetes/guestbook --name=guestbook
+</code></pre></div></div>
+
+<p>4) Create route to expose our app</p>
+
+<p>vim route-guestbook.yaml</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: guestbook
+  name: guestbook
+  namespace: fran-project
+  selfLink: /apis/route.openshift.io/v1/namespaces/fran-project/routes/guestbook
+spec:
+  host: guestbook-fran-project.127.0.0.1.nip.io
+  port:
+    targetPort: 3000-tcp
+  to:
+    kind: Service
+    name: guestbook
+    weight: 100
+  wildcardPolicy: None
+</code></pre></div></div>
+<p>Create the route:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create -f route-guestbook.yaml
+</code></pre></div></div>
+
+<p>5) Go to <a href="http://guestbook-fran-project.127.0.0.1.nip.io">http://guestbook-fran-project.127.0.0.1.nip.io</a></p>
+
+<p>then you will see:</p>
+
+<p><img src="/images/2016-04-01-openshift-deploy-app.jpg" alt="" /></p>
 </span>
         
         
@@ -144,10 +181,10 @@ ifconfig eth0 192.168.17.101 netmask 255.255.255.0 up
 
         <div class="tags"><small>
           <i class="fa fa-tags"></i>
-            kvm, docker, docker-machine
+            openshift
         </small></div>
         <div class="suggest-edit">
-          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2015-09-07-docker-machine-static-ip.md" target="_blank"> sugest a review?</a></p>
+          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2016-04-01-openshift-deploy-app.md" target="_blank"> sugest a review?</a></p>
         </div>
   
       </div>
@@ -168,43 +205,33 @@ ifconfig eth0 192.168.17.101 netmask 255.255.255.0 up
       <div class="content-panel related clearfix">
         
         <div class="related-header">
-          <a href="/openshift/2016/04/01/openshift-deploy-app/">Leer más</a>
+          <a href="/kubernetes/2016/03/08/k8s-credentials-and-secrets/">Leer más</a>
         </div>
           <div class="title">
-            <a href="/openshift/2016/04/01/openshift-deploy-app/">Openshift: Create project, Deploy and Expose an APP.</a>
+            <a href="/kubernetes/2016/03/08/k8s-credentials-and-secrets/">kubernetes Credentials and Secrets</a>
           </div>
           <div class="excerpt">
              
               .
              
-            <a href="/openshift/2016/04/01/openshift-deploy-app/">Continuar Leyendo</a>
+            <a href="/kubernetes/2016/03/08/k8s-credentials-and-secrets/">Continuar Leyendo</a>
           </div>
         
         <hr />
         <div class="previous previous-next">
           
           <p>
-            <a href="/kvm/2015/09/06/docker-machine-with-kvm-driver/">Docker-Machine with kvm driver.</a>
+            <a href="/kubernetes/2016/03/08/k8s-credentials-and-secrets/">kubernetes Credentials and Secrets</a>
           </p>
           <p class="date">Publicado en 
           
-            Septiembre
+            Abril
               
-            7
-             del 2015</p>
+            1
+             del 2016</p>
           
         </div>
         <div class="next previous-next">
-          
-          <p>
-            <a href="/docker/2016/01/23/deploy-docker-swarm-cluster/">Deploy Docker Swarm cluster multi-master.</a>
-          </p>
-          <p class="date">Publicado en 
-          
-            Septiembre
-              
-            7
-             del 2015</p>
           
         </div>
       </div>

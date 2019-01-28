@@ -1,6 +1,14 @@
 [
   
   {
+    "title"    : "Openshift: Create project, Deploy and Expose an APP.",
+    "category" : "",
+    "tags"     : "openshift",
+    "url"      : "/openshift/2016/04/01/openshift-deploy-app/",
+    "date"     : "2016-04-01 00:00:00 +0200"
+    } ,
+    
+  {
     "title"    : "kubernetes Credentials and Secrets",
     "category" : "",
     "tags"     : "k8s, kubernetes",
