@@ -137,7 +137,7 @@ layout: default
       <div class="content-panel related clearfix">
         {% for post in site.related_posts limit:1 %}
         <div class="related-header">
-          <a href="{{ site.baseurl }}{{ post.url }}">Leer más</a>
+          <a href="{{ site.baseurl }}{{ post.url }}">Next Reading</a>
         </div>
           <div class="title">
             <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
@@ -148,7 +148,7 @@ layout: default
              {% else %}
               {{ post.excerpt | strip_html | truncatewords:30 }}
              {% endif %}
-            <a href="{{ site.baseurl }}{{ post.url }}">Continuar Leyendo</a>
+            <a href="{{ site.baseurl }}{{ post.url }}">... continue reading</a>
           </div>
         {% endfor %}
         <hr />
