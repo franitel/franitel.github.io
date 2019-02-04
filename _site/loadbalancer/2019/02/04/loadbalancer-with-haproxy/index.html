@@ -109,14 +109,163 @@
 
       <div class="read-time">
         <small>
-          1 minuto(s) de lectura
+          2 minuto(s) de lectura
         </small>
       </div>
 
       <div class="content-panel content">
       
+          This article is part of <i>«LoadBalancers»</i> series:
+          <ol class="series">
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+              <li>
+                
+                  
+                  Load Balancing with haproxy.
+                
+              </li>
+            
+          
+          </ol>
+        
+        <hr>
+        <span itemprop="articleBody"><p>Today I’m going to start a series of LoadBalancers posts.
+In this first post I’m going to talk about HAPROXY.</p>
+<h3 id="contents">CONTENTS.</h3>
+<ul>
+  <li>Introduction about HAPROXY</li>
+  <li>How to install in a centos server</li>
+  <li>Config for a basic deployment. (Load Balancer Round-robin)</li>
+</ul>
 
-        <span itemprop="articleBody"><p>In this case</p>
+<hr />
+
+<h3 id="introducction">Introducction.</h3>
+<h4 id="definition">Definition.</h4>
+<p>As the haproxy website said:   <strong>haproxy</strong> is an Open Source Software to do Load Balancer
+and Application Delivery Controller.
+What does this mean?, basically you can use haproxy to route traffic regardless of the protocol,
+for example it could provide load balancing to:</p>
+
+<ul>
+  <li><strong>Webservers:</strong> Such as a number of hosts running Apache, nginx, lighttped, etc.</li>
+  <li><strong>Mail servers:</strong> Such as a small pool of hosts running postfix, exim4, qpsmtpd, etc.</li>
+  <li><strong>Arbitrary TCP services:</strong> Such as APIs implemented in go, lua, or node.js.</li>
+</ul>
+
+<h4 id="load-balanching-modes">Load-Balanching <strong>MODES</strong></h4>
+
+<p>If for example we</p>
+
+<ul>
+  <li><strong>balance roundrobin:</strong> Distributing each request in turn to the next server:</li>
+  <li><strong>balance leastconn:</strong> Distributing each incoming request to the least loaded backed we have:</li>
+  <li><strong>balance source:</strong>	Distribute each request to a particular server, based upon the hash of the source IP making that request:</li>
+</ul>
+
+<p>I would like to do some posts about HAPROXY, because we have a lot of options and it is a very interesting tool.
+In this post I’m going to configure HAPROXY</p>
+
+<h3 id="environment">Environment</h3>
+<p>In this case I’m going to configure HAPROXY to route http traffic.</p>
+
+<p>To do that I’m going to create 4 docker nginx containers in the followings ports:</p>
+
+<p>haproxy port 8080</p>
+
+<p>nginx1  port 8081
+nginx2  port 8082
+nginx3  port 8083
+nginx4  port 8084</p>
+
+<p>mariadb port 3306</p>
+
+<h3 id="haproxycfg">haproxy.cfg</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>global
+        log     /dev/log    local0
+        log     /dev/log    local1 notice
+        chroot  /var/lib/haproxy
+        user    haproxy
+        group   haproxy
+        maxconn 1024
+        daemon
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+
+#
+#  Listen on *:8080 - Send traffic to the backend named "nginx"
+#
+frontend www-http
+    bind *:8080
+    default_backend nginx
+
+#
+# Back-end definition.
+#
+backend nginx
+    mode http
+    balance roundrobin
+	stick-table type ip size 2000k expire 30m
+	stick on src
+	stick-table type string size 30k expire 30m
+
+    stick on src table https
+    cookie SRV insert indirect nocache
+    server nginx1 10.0.0.10:8081
+    server nginx2 10.0.0.20:8082
+    server nginx3 10.0.0.30:8083
+    server nginx4 10.0.0.40:8084
+</code></pre></div></div>
+
+<p>HAproxy Sticky sessions
+Health Checkup</p>
+
+<h3 id="docker-compose-to-test-in-a-easily">Docker-compose to test in a easily</h3>
+
+<p>vim docker-compose.yml</p>
+
+<p>docker-compose up -d</p>
+
+<p>I’m going to generate 4 connecting in a single IP address can be passed to four backend hosts.</p>
+
+<p>To do this I’m going to create the following environment:</p>
+
+<p>1 haproxy-server
+1 server with wordpress
+1 server with nginx</p>
+
+<h3 id="create-dockerfile">Create DockerFile</h3>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FROM haproxy:1.7
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+</code></pre></div></div>
+
+<h3 id="build-the-container">Build the container</h3>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build -t my-haproxy .
+</code></pre></div></div>
 
 <h2 id="install-docker-machine">Install Docker-Machine:</h2>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code></code></pre></div></div>
@@ -134,6 +283,8 @@ docker-machine create -d kvm dm-swarm2
 </code></pre></div></div>
 </span>
         
+        
+          
         
 
         

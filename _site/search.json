@@ -1,6 +1,22 @@
 [
   
   {
+    "title"    : "Load Balancing with haproxy.",
+    "category" : "",
+    "tags"     : "haproxy, loadbalancing",
+    "url"      : "/loadbalancer/2019/02/04/loadbalancer-with-haproxy/",
+    "date"     : "2019-02-04 00:00:00 +0100"
+    } ,
+    
+  {
+    "title"    : "Openshift pipeline Jenkins",
+    "category" : "",
+    "tags"     : "openshift, jenkins",
+    "url"      : "/openshift/2016/04/10/openshift-pipeline/",
+    "date"     : "2016-04-10 00:00:00 +0200"
+    } ,
+    
+  {
     "title"    : "Openshift: Create project, Deploy and Expose an APP.",
     "category" : "",
     "tags"     : "openshift",

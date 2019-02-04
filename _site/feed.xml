@@ -5,9 +5,203 @@
     <description>Un espacio para compartir</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 28 Jan 2019 11:23:26 +0100</pubDate>
-    <lastBuildDate>Mon, 28 Jan 2019 11:23:26 +0100</lastBuildDate>
+    <pubDate>Mon, 04 Feb 2019 17:24:48 +0100</pubDate>
+    <lastBuildDate>Mon, 04 Feb 2019 17:24:48 +0100</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
+    
+      <item>
+        <title>Load Balancing with haproxy.</title>
+        <description>&lt;p&gt;Today I’m going to start a series of LoadBalancers posts.
+In this first post I’m going to talk about HAPROXY.&lt;/p&gt;
+&lt;h3 id=&quot;contents&quot;&gt;CONTENTS.&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;Introduction about HAPROXY&lt;/li&gt;
+  &lt;li&gt;How to install in a centos server&lt;/li&gt;
+  &lt;li&gt;Config for a basic deployment. (Load Balancer Round-robin)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;introducction&quot;&gt;Introducction.&lt;/h3&gt;
+&lt;h4 id=&quot;definition&quot;&gt;Definition.&lt;/h4&gt;
+&lt;p&gt;As the haproxy website said:   &lt;strong&gt;haproxy&lt;/strong&gt; is an Open Source Software to do Load Balancer
+and Application Delivery Controller.
+What does this mean?, basically you can use haproxy to route traffic regardless of the protocol,
+for example it could provide load balancing to:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Webservers:&lt;/strong&gt; Such as a number of hosts running Apache, nginx, lighttped, etc.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Mail servers:&lt;/strong&gt; Such as a small pool of hosts running postfix, exim4, qpsmtpd, etc.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Arbitrary TCP services:&lt;/strong&gt; Such as APIs implemented in go, lua, or node.js.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;load-balanching-modes&quot;&gt;Load-Balanching &lt;strong&gt;MODES&lt;/strong&gt;&lt;/h4&gt;
+
+&lt;p&gt;If for example we&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;balance roundrobin:&lt;/strong&gt; Distributing each request in turn to the next server:&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;balance leastconn:&lt;/strong&gt; Distributing each incoming request to the least loaded backed we have:&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;balance source:&lt;/strong&gt;	Distribute each request to a particular server, based upon the hash of the source IP making that request:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I would like to do some posts about HAPROXY, because we have a lot of options and it is a very interesting tool.
+In this post I’m going to configure HAPROXY&lt;/p&gt;
+
+&lt;h3 id=&quot;environment&quot;&gt;Environment&lt;/h3&gt;
+&lt;p&gt;In this case I’m going to configure HAPROXY to route http traffic.&lt;/p&gt;
+
+&lt;p&gt;To do that I’m going to create 4 docker nginx containers in the followings ports:&lt;/p&gt;
+
+&lt;p&gt;haproxy port 8080&lt;/p&gt;
+
+&lt;p&gt;nginx1  port 8081
+nginx2  port 8082
+nginx3  port 8083
+nginx4  port 8084&lt;/p&gt;
+
+&lt;p&gt;mariadb port 3306&lt;/p&gt;
+
+&lt;h3 id=&quot;haproxycfg&quot;&gt;haproxy.cfg&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;global
+        log     /dev/log    local0
+        log     /dev/log    local1 notice
+        chroot  /var/lib/haproxy
+        user    haproxy
+        group   haproxy
+        maxconn 1024
+        daemon
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+
+#
+#  Listen on *:8080 - Send traffic to the backend named &quot;nginx&quot;
+#
+frontend www-http
+    bind *:8080
+    default_backend nginx
+
+#
+# Back-end definition.
+#
+backend nginx
+    mode http
+    balance roundrobin
+	stick-table type ip size 2000k expire 30m
+	stick on src
+	stick-table type string size 30k expire 30m
+
+    stick on src table https
+    cookie SRV insert indirect nocache
+    server nginx1 10.0.0.10:8081
+    server nginx2 10.0.0.20:8082
+    server nginx3 10.0.0.30:8083
+    server nginx4 10.0.0.40:8084
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;HAproxy Sticky sessions
+Health Checkup&lt;/p&gt;
+
+&lt;h3 id=&quot;docker-compose-to-test-in-a-easily&quot;&gt;Docker-compose to test in a easily&lt;/h3&gt;
+
+&lt;p&gt;vim docker-compose.yml&lt;/p&gt;
+
+&lt;p&gt;docker-compose up -d&lt;/p&gt;
+
+&lt;p&gt;I’m going to generate 4 connecting in a single IP address can be passed to four backend hosts.&lt;/p&gt;
+
+&lt;p&gt;To do this I’m going to create the following environment:&lt;/p&gt;
+
+&lt;p&gt;1 haproxy-server
+1 server with wordpress
+1 server with nginx&lt;/p&gt;
+
+&lt;h3 id=&quot;create-dockerfile&quot;&gt;Create DockerFile&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;FROM haproxy:1.7
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;build-the-container&quot;&gt;Build the container&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker build -t my-haproxy .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;install-docker-machine&quot;&gt;Install Docker-Machine:&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;install-kvm-driver&quot;&gt;Install kvm driver:&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.7.0/docker-machine-driver -o /usr/local/bin/docker-machine-driver-kvm
+sudo chmod +x /usr/local/bin/docker-machine-driver-kvm
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;create-vm&quot;&gt;Create VM:&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine create -d kvm dm-swarm1
+docker-machine create -d kvm dm-swarm2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;connect-to-vm&quot;&gt;Connect to VM&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine ssh dm-swarm1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Mon, 04 Feb 2019 00:00:00 +0100</pubDate>
+        <link>/loadbalancer/2019/02/04/loadbalancer-with-haproxy/</link>
+        <guid isPermaLink="true">/loadbalancer/2019/02/04/loadbalancer-with-haproxy/</guid>
+        
+        <category>haproxy</category>
+        
+        <category>loadbalancing</category>
+        
+        
+        <category>loadbalancer</category>
+        
+      </item>
+    
+      <item>
+        <title>Openshift pipeline Jenkins</title>
+        <description>&lt;p&gt;In this tutorial we are going to create a jenkins server in openshift and we are going to create a pipeline to build a Docker container using a Dockerfile that is in my franitel.github.com repository.&lt;/p&gt;
+
+&lt;h3 id=&quot;steps&quot;&gt;Steps&lt;/h3&gt;
+
+&lt;p&gt;1) Create project&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-project pipeline-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;2) Give permissions&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pipeline-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;3) Deploy a Jenkins app&lt;/p&gt;
+
+&lt;p&gt;4) create the pipeline.&lt;/p&gt;
+
+&lt;p&gt;5) build the project.&lt;/p&gt;
+
+&lt;h2 id=&quot;install-docker-machine&quot;&gt;Install Docker-Machine:&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -L https://github.com/~machine-$(uname -s)-$(uname -m)
+chmod +x /tmp/docker-machine &amp;amp;&amp;amp;
+sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;https://www.youtube.com/watch?v=07-Xx73y3zA&lt;/p&gt;
+
+&lt;p&gt;https://github.com/franitel/openshift/tree/master/pipeline-example&lt;/p&gt;
+</description>
+        <pubDate>Sun, 10 Apr 2016 00:00:00 +0200</pubDate>
+        <link>/openshift/2016/04/10/openshift-pipeline/</link>
+        <guid isPermaLink="true">/openshift/2016/04/10/openshift-pipeline/</guid>
+        
+        <category>openshift</category>
+        
+        <category>jenkins</category>
+        
+        
+        <category>openshift</category>
+        
+      </item>
     
       <item>
         <title>Openshift: Create project, Deploy and Expose an APP.</title>
