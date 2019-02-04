@@ -5,9 +5,54 @@
     <description>Un espacio para compartir</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 28 Jan 2019 11:23:26 +0100</pubDate>
-    <lastBuildDate>Mon, 28 Jan 2019 11:23:26 +0100</lastBuildDate>
+    <pubDate>Mon, 04 Feb 2019 17:30:29 +0100</pubDate>
+    <lastBuildDate>Mon, 04 Feb 2019 17:30:29 +0100</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
+    
+      <item>
+        <title>Openshift pipeline Jenkins</title>
+        <description>&lt;p&gt;In this tutorial we are going to create a jenkins server in openshift and we are going to create a pipeline to build a Docker container using a Dockerfile that is in my franitel.github.com repository.&lt;/p&gt;
+
+&lt;h3 id=&quot;steps&quot;&gt;Steps&lt;/h3&gt;
+
+&lt;p&gt;1) Create project&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-project pipeline-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;2) Give permissions&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pipeline-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;3) Deploy a Jenkins app&lt;/p&gt;
+
+&lt;p&gt;4) create the pipeline.&lt;/p&gt;
+
+&lt;p&gt;5) build the project.&lt;/p&gt;
+
+&lt;h2 id=&quot;install-docker-machine&quot;&gt;Install Docker-Machine:&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -L https://github.com/~machine-$(uname -s)-$(uname -m)
+chmod +x /tmp/docker-machine &amp;amp;&amp;amp;
+sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;https://www.youtube.com/watch?v=07-Xx73y3zA&lt;/p&gt;
+
+&lt;p&gt;https://github.com/franitel/openshift/tree/master/pipeline-example&lt;/p&gt;
+</description>
+        <pubDate>Sun, 10 Apr 2016 00:00:00 +0200</pubDate>
+        <link>/openshift/2016/04/10/openshift-pipeline/</link>
+        <guid isPermaLink="true">/openshift/2016/04/10/openshift-pipeline/</guid>
+        
+        <category>openshift</category>
+        
+        <category>jenkins</category>
+        
+        
+        <category>openshift</category>
+        
+      </item>
     
       <item>
         <title>Openshift: Create project, Deploy and Expose an APP.</title>
