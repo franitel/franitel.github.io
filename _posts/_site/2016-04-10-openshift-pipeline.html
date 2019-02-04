@@ -1,0 +1,29 @@
+<p>In this tutorial we are going to create a jenkins server in openshift and we are going to create a pipeline to build a Docker container using a Dockerfile that is in my franitel.github.com repository.</p>
+
+<h3 id="steps">Steps</h3>
+
+<p>1) Create project</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc new-project pipeline-project
+</code></pre></div></div>
+
+<p>2) Give permissions</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pipeline-project
+</code></pre></div></div>
+
+<p>3) Deploy a Jenkins app</p>
+
+<p>4) create the pipeline.</p>
+
+<p>5) build the project.</p>
+
+<h2 id="install-docker-machine">Install Docker-Machine:</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -L https://github.com/~machine-$(uname -s)-$(uname -m)
+chmod +x /tmp/docker-machine &amp;&amp;
+sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+</code></pre></div></div>
+
+<p>https://www.youtube.com/watch?v=07-Xx73y3zA</p>
+
+<p>https://github.com/franitel/openshift/tree/master/pipeline-example</p>

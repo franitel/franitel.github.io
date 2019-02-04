@@ -1,0 +1,17 @@
+<h2 id="install-docker-machine">Install Docker-Machine:</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -L https://github.com/docker/machine/releases/download/v0.15.0/docker-machine-$(uname -s)-$(uname -m)
+chmod +x /tmp/docker-machine &amp;&amp;
+sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+</code></pre></div></div>
+<h2 id="install-kvm-driver">Install kvm driver:</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.7.0/docker-machine-driver -o /usr/local/bin/docker-machine-driver-kvm
+sudo chmod +x /usr/local/bin/docker-machine-driver-kvm
+</code></pre></div></div>
+
+<h2 id="create-vm">Create VM:</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-machine create -d kvm dm-swarm1
+docker-machine create -d kvm dm-swarm2
+</code></pre></div></div>
+<h2 id="connect-to-vm">Connect to VM</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-machine ssh dm-swarm1
+</code></pre></div></div>

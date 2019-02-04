@@ -1,0 +1,15 @@
+<p>In this case we are going to modify the bootlocal.sh script to use static ip addres in vm generated using docker-machine.</p>
+
+<h2 id="static-ip-address">Static IP Address:</h2>
+
+<p>Connect to the server and edit the bootlocal.sh file:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-machine ssh swarm-master1
+vi /var/lib/boot2docker/bootlocal.sh
+</code></pre></div></div>
+<p>Modify the bootlocal.sh script:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+<span class="nb">kill cat</span> /var/run/udhcpc.eth0.pid
+ifconfig eth2 172.26.100.101 netmask 255.255.255.0 up
+<span class="nb">kill cat</span> /var/run/udhcpc.eth1.pid
+ifconfig eth0 192.168.17.101 netmask 255.255.255.0 up
+</code></pre></div></div>

@@ -1,0 +1,51 @@
+<h3 id="description">Description</h3>
+<p>In this post I’m going to setup a docker swarm cluster using 3 nodes where all nodes are master.</p>
+
+<h4 id="system-resources">System Resources</h4>
+<p>we need 3 centos 7 with the following configuration:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1  --&gt;  172.26.12.1
+swarm2  --&gt;  172.26.12.2
+swarm3  --&gt;  172.26.12.3
+</code></pre></div></div>
+<h4 id="install-docker-ce-in-all-servers">Install docker-ce in all servers</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarmX#&gt; sudo yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+swarmX#&gt; sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+swarmX#&gt; sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+swarmX#&gt; sudo yum install docker-ce
+</code></pre></div></div>
+
+<h4 id="initialize-the-cluster-in-swarm1">Initialize the cluster in swarm1</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt;   docker swarm init --advertise-addr 172.26.12.1
+</code></pre></div></div>
+
+<h4 id="show-the-tokens">Show the tokens</h4>
+
+<p>worker token</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt;  docker swarm join-token worker
+</code></pre></div></div>
+
+<p>master token</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt;  docker swarm join-token manager
+</code></pre></div></div>
+
+<h4 id="join-nodes-using-the-master-token--run-in-swarm2-and-swarm3">Join nodes using the master token. ( Run in swarm2 and swarm3)</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm2#&gt; docker swarm join --token SWMTKN-1-4pipgzprgeee73d8h3hwwakp3dx6aes6dsgqs
+
+swarm3#&gt; docker swarm join --token SWMTKN-1-4pipgzprgeee73d8h3hwwakp3dx6aes6dsgqs
+</code></pre></div></div>
+
+<h4 id="check-nodes-in-the-cluster">check nodes in the cluster</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt; docker node ls
+</code></pre></div></div>
+
+<h4 id="deploy-a-service-in-cluster-swarm">Deploy a service in cluster swarm</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt; docker service create --replicas 3 -p 80:80 --name web1 serviceName nginx
+</code></pre></div></div>
+
+<h4 id="check-the-service">Check the service</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt; docker service ls
+swarm1#&gt; docker service ps web1
+</code></pre></div></div>
+

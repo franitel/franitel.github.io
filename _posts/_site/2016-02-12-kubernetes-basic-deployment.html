@@ -1,0 +1,133 @@
+<p>In this first deploy I’m going to deploy a simple nginx server, but I’m going to use namespace and resource limitation.</p>
+
+<h3 id="definitions">Definitions:</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1) NAMESPACES: 
+   Kubernetes supports multiple virtual clusters backed by the same physical cluster. These virtual clusters are called namespaces. Namespaces are intended for use in environments with many users spread across multiple teams, or projects.
+
+2) MEMORY: "256Mi": 
+   256Mi is equal to 256 MegaBytes.
+
+3) CPU: "1000m": 
+   One thousand MilliCPUs is equal to 1 CPU, you can use 500m or "0,5" to specify 1/2 CPU
+</code></pre></div></div>
+
+<h3 id="kubernetes-example-deployment">Kubernetes Example Deployment</h3>
+
+<p>In this basic example I’m going to do the following steps:
+	1) Create a namespace
+	2) Create a Nginx Deployment
+	3) Create a Nginx Service
+	4) Expose and access the Nginx Service</p>
+
+<h2 id="clone-my-respository">Clone my respository</h2>
+
+<h2 id="create-a-namespace-">Create a namespace ()</h2>
+<p>vim namespace-demo.yaml</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: v1
+kind: Namespace
+metadata:
+  name: namespace-demo
+  labels:
+    apps: web-based
+  annotations:
+    type: demo
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create -f namespace-demo.yaml
+</code></pre></div></div>
+
+<h2 id="assign-resource-quota-to-namespace">Assign Resource Quota To Namespace</h2>
+
+<p>vim quota-namespace-demo.yaml</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: cpu-mem-quota
+  namespace: namespace-demo
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create -f quota-namespace-demo.yaml
+</code></pre></div></div>
+
+<h2 id="create-a-deployment-in-namespace-demo">Create A Deployment in namespace-demo</h2>
+<p>vim deployment.yaml</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+  namespace: namespace-demo
+  annotations:
+    monitoring: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+          requests: 
+            memory: "1Gi"
+            cpu: "500m"
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create -f deployment.yaml
+</code></pre></div></div>
+<p>Check the deployment</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get deployments -n namespace-demo
+</code></pre></div></div>
+
+<h2 id="create-a-service-and-expose-the-deployment">Create A Service And Expose The Deployment</h2>
+
+<p>vim service-demo.yaml</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx
+  name: nginx
+  namespace: namespace-demo
+spec:
+  ports:
+  - nodePort: 31111
+    port: 80	
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+  type: NodePort
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create -f service-demo.yaml
+</code></pre></div></div>
+<p>Now you can see the service created running the following command:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get services  -n namespace-demo
+</code></pre></div></div>
+
+<h2 id="connect-to-the-nginx-service">Connect to the nginx service</h2>
+<p>To connect 
+http://[kubernete-server-ip]:31111</p>
+
+<p>##</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+</code></pre></div></div>
+
