@@ -15,7 +15,9 @@ Today I'm going to start a series of LoadBalancers posts.
 In this first post I'm going to talk about HAPROXY.
 ### CONTENTS.
 * Introduction about HAPROXY
-* How to install in a centos server
+* Environment.
+* Install haproxy.
+* Configure haproxy.cfg
 * Config for a basic deployment. (Load Balancer Round-robin)
 
 ---
@@ -33,16 +35,16 @@ for example it could provide load balancing to:
 
 #### Load-Balanching __MODES__
 
-If for example we 
+There are various different modes, which may be specified via the "balance" directive, in the backend section. 
+The three most common approaches are:
 
-* __balance roundrobin:__ Distributing each request in turn to the next server:
-* __balance leastconn:__ Distributing each incoming request to the least loaded backed we have:
-* __balance source:__	Distribute each request to a particular server, based upon the hash of the source IP making that request:
+* __balance roundrobin:__ Distributing each request in turn to the next server.
+* __balance leastconn:__ Distributing each incoming request to the least loaded backed we have.
+* __balance source:__	Distribute each request to a particular server, based upon the hash of the source IP making that request.
 
 
-
-I would like to do some posts about HAPROXY, because we have a lot of options and it is a very interesting tool.
-In this post I'm going to configure HAPROXY
+I'd imagine the most popular use-case though would be directing traffic to webservers. 
+In this next example we'll show connections made to a single IP address can be passed to four backend hosts.
 
 
 
@@ -51,20 +53,27 @@ In this case I'm going to configure HAPROXY to route http traffic.
 
 To do that I'm going to create 4 docker nginx containers in the followings ports:
 
-haproxy port 8080
+* haproxy port 8080
 
-nginx1  port 8081
-nginx2  port 8082
-nginx3  port 8083
-nginx4  port 8084
+* nginx1  port 8081
+* nginx2  port 8082
+* nginx3  port 8083
+* nginx4  port 8084
 
-mariadb port 3306
-
-
+* mariadb port 3306
 
 
-###  haproxy.cfg
+### Install haproxy.
 
+~~~
+sudo apt-get update
+sudo apt-get install haproxy
+~~~
+
+
+### Configure haproxy.cfg
+
+sudo vim /etc/haproxy/haproxy.cfg
 ~~~
 global
         log     /dev/log    local0
@@ -72,8 +81,6 @@ global
         chroot  /var/lib/haproxy
         user    haproxy
         group   haproxy
-        maxconn 1024
-        daemon
 
 defaults
         log     global
@@ -96,21 +103,20 @@ backend nginx
     balance roundrobin
 	stick-table type ip size 2000k expire 30m
 	stick on src
-	stick-table type string size 30k expire 30m
-
-    stick on src table https
-    cookie SRV insert indirect nocache
-    server nginx1 10.0.0.10:8081
-    server nginx2 10.0.0.20:8082
-    server nginx3 10.0.0.30:8083
-    server nginx4 10.0.0.40:8084
+    server nginx1 10.0.0.10:8081 check
+    server nginx2 10.0.0.20:8082 check
+    server nginx3 10.0.0.30:8083 check
+    server nginx4 10.0.0.40:8084 check
 ~~~
 
-
+http://virtuallyhyper.com/2013/05/configure-haproxy-to-load-balance-sites-with-ssl/
 
 HAproxy Sticky sessions
 Health Checkup
 	
+
+Hacer otro post con haproxy-wi
+docker run -d --name haproxy-wi -v haproxy-wi:/var/www/haproxy-wi/app -p 8080:80 aidaho/haproxy-wi
 
 
 

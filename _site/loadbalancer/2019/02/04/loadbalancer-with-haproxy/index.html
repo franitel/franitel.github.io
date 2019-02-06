@@ -153,7 +153,9 @@ In this first post I’m going to talk about HAPROXY.</p>
 <h3 id="contents">CONTENTS.</h3>
 <ul>
   <li>Introduction about HAPROXY</li>
-  <li>How to install in a centos server</li>
+  <li>Environment.</li>
+  <li>Install haproxy.</li>
+  <li>Configure haproxy.cfg</li>
   <li>Config for a basic deployment. (Load Balancer Round-robin)</li>
 </ul>
 
@@ -174,41 +176,51 @@ for example it could provide load balancing to:</p>
 
 <h4 id="load-balanching-modes">Load-Balanching <strong>MODES</strong></h4>
 
-<p>If for example we</p>
+<p>There are various different modes, which may be specified via the “balance” directive, in the backend section. 
+The three most common approaches are:</p>
 
 <ul>
-  <li><strong>balance roundrobin:</strong> Distributing each request in turn to the next server:</li>
-  <li><strong>balance leastconn:</strong> Distributing each incoming request to the least loaded backed we have:</li>
-  <li><strong>balance source:</strong>	Distribute each request to a particular server, based upon the hash of the source IP making that request:</li>
+  <li><strong>balance roundrobin:</strong> Distributing each request in turn to the next server.</li>
+  <li><strong>balance leastconn:</strong> Distributing each incoming request to the least loaded backed we have.</li>
+  <li><strong>balance source:</strong>	Distribute each request to a particular server, based upon the hash of the source IP making that request.</li>
 </ul>
 
-<p>I would like to do some posts about HAPROXY, because we have a lot of options and it is a very interesting tool.
-In this post I’m going to configure HAPROXY</p>
+<p>I’d imagine the most popular use-case though would be directing traffic to webservers. 
+In this next example we’ll show connections made to a single IP address can be passed to four backend hosts.</p>
 
 <h3 id="environment">Environment</h3>
 <p>In this case I’m going to configure HAPROXY to route http traffic.</p>
 
 <p>To do that I’m going to create 4 docker nginx containers in the followings ports:</p>
 
-<p>haproxy port 8080</p>
+<ul>
+  <li>
+    <p>haproxy port 8080</p>
+  </li>
+  <li>nginx1  port 8081</li>
+  <li>nginx2  port 8082</li>
+  <li>nginx3  port 8083</li>
+  <li>
+    <p>nginx4  port 8084</p>
+  </li>
+  <li>mariadb port 3306</li>
+</ul>
 
-<p>nginx1  port 8081
-nginx2  port 8082
-nginx3  port 8083
-nginx4  port 8084</p>
+<h3 id="install-haproxy">Install haproxy.</h3>
 
-<p>mariadb port 3306</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt-get update
+sudo apt-get install haproxy
+</code></pre></div></div>
 
-<h3 id="haproxycfg">haproxy.cfg</h3>
+<h3 id="configure-haproxycfg">Configure haproxy.cfg</h3>
 
+<p>sudo vim /etc/haproxy/haproxy.cfg</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>global
         log     /dev/log    local0
         log     /dev/log    local1 notice
         chroot  /var/lib/haproxy
         user    haproxy
         group   haproxy
-        maxconn 1024
-        daemon
 
 defaults
         log     global
@@ -231,18 +243,17 @@ backend nginx
     balance roundrobin
 	stick-table type ip size 2000k expire 30m
 	stick on src
-	stick-table type string size 30k expire 30m
-
-    stick on src table https
-    cookie SRV insert indirect nocache
-    server nginx1 10.0.0.10:8081
-    server nginx2 10.0.0.20:8082
-    server nginx3 10.0.0.30:8083
-    server nginx4 10.0.0.40:8084
+    server nginx1 10.0.0.10:8081 check
+    server nginx2 10.0.0.20:8082 check
+    server nginx3 10.0.0.30:8083 check
+    server nginx4 10.0.0.40:8084 check
 </code></pre></div></div>
 
 <p>HAproxy Sticky sessions
 Health Checkup</p>
+
+<p>Hacer otro post con haproxy-wi
+docker run -d –name haproxy-wi -v haproxy-wi:/var/www/haproxy-wi/app -p 8080:80 aidaho/haproxy-wi</p>
 
 <h3 id="docker-compose-to-test-in-a-easily">Docker-compose to test in a easily</h3>
 
