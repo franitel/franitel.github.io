@@ -98,10 +98,10 @@
           <span itemprop="datePublished" content="2014-08-28">
             <!-- Snippet para establecer meses a español -->
             
-            February
+            April
               
-            4
-             , 2019
+            14
+             , 2016
           </span>
           in loadbalancer category.
         </i></small>
@@ -156,13 +156,12 @@ In this first post I’m going to talk about HAPROXY.</p>
   <li>Environment.</li>
   <li>Install haproxy.</li>
   <li>Configure haproxy.cfg</li>
-  <li>Config for a basic deployment. (Load Balancer Round-robin)</li>
 </ul>
 
 <hr />
 
 <h3 id="introducction">Introducction.</h3>
-<h4 id="definition">Definition.</h4>
+<h4 id="definition">Definition:</h4>
 <p>As the haproxy website said:   <strong>haproxy</strong> is an Open Source Software to do Load Balancer
 and Application Delivery Controller.
 What does this mean?, basically you can use haproxy to route traffic regardless of the protocol,
@@ -185,29 +184,27 @@ The three most common approaches are:</p>
   <li><strong>balance source:</strong>	Distribute each request to a particular server, based upon the hash of the source IP making that request.</li>
 </ul>
 
-<p>I’d imagine the most popular use-case though would be directing traffic to webservers. 
-In this next example we’ll show connections made to a single IP address can be passed to four backend hosts.</p>
+<p>The most popular use-case though would be directing traffic to webservers. 
+In this next example I’ll show connections made to a single IP address can be passed to four backend hosts.</p>
 
 <h3 id="environment">Environment</h3>
-<p>In this case I’m going to configure HAPROXY to route http traffic.</p>
+<p>The Environment will consist of 2 parts, the FrontEnd and the BackEnd.</p>
 
-<p>To do that I’m going to create 4 docker nginx containers in the followings ports:</p>
-
+<p>The FrontEnd is a machine with haproxy listening on 80 port :</p>
 <ul>
-  <li>
-    <p>haproxy port 8080</p>
-  </li>
+  <li>haproxy port 80</li>
+</ul>
+
+<p>And The BackEnd are 4 nginx server listening on 8081 8082 8083 8084:</p>
+<ul>
   <li>nginx1  port 8081</li>
   <li>nginx2  port 8082</li>
   <li>nginx3  port 8083</li>
-  <li>
-    <p>nginx4  port 8084</p>
-  </li>
-  <li>mariadb port 3306</li>
+  <li>nginx4  port 8084</li>
 </ul>
 
 <h3 id="install-haproxy">Install haproxy.</h3>
-
+<p>In this case we are going to do the setup in Ubuntu:bionic:</p>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt-get update
 sudo apt-get install haproxy
 </code></pre></div></div>
@@ -229,10 +226,10 @@ defaults
         option  dontlognull
 
 #
-#  Listen on *:8080 - Send traffic to the backend named "nginx"
+#  Listen on *:80 - Send traffic to the backend named "nginx"
 #
 frontend www-http
-    bind *:8080
+    bind *:80
     default_backend nginx
 
 #
@@ -249,49 +246,11 @@ backend nginx
     server nginx4 10.0.0.40:8084 check
 </code></pre></div></div>
 
-<p>HAproxy Sticky sessions
-Health Checkup</p>
+<p>In the backend we are specified to use mode http with balance roundrobin, also we have stick-table,
+this is keeping the session between the client and the final server.</p>
 
-<p>Hacer otro post con haproxy-wi
-docker run -d –name haproxy-wi -v haproxy-wi:/var/www/haproxy-wi/app -p 8080:80 aidaho/haproxy-wi</p>
+<p>In the next post I’ll deploy an haproxy using docker-compose.yml</p>
 
-<h3 id="docker-compose-to-test-in-a-easily">Docker-compose to test in a easily</h3>
-
-<p>vim docker-compose.yml</p>
-
-<p>docker-compose up -d</p>
-
-<p>I’m going to generate 4 connecting in a single IP address can be passed to four backend hosts.</p>
-
-<p>To do this I’m going to create the following environment:</p>
-
-<p>1 haproxy-server
-1 server with wordpress
-1 server with nginx</p>
-
-<h3 id="create-dockerfile">Create DockerFile</h3>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FROM haproxy:1.7
-COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
-</code></pre></div></div>
-
-<h3 id="build-the-container">Build the container</h3>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build -t my-haproxy .
-</code></pre></div></div>
-
-<h2 id="install-docker-machine">Install Docker-Machine:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code></code></pre></div></div>
-<h2 id="install-kvm-driver">Install kvm driver:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.7.0/docker-machine-driver -o /usr/local/bin/docker-machine-driver-kvm
-sudo chmod +x /usr/local/bin/docker-machine-driver-kvm
-</code></pre></div></div>
-
-<h2 id="create-vm">Create VM:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-machine create -d kvm dm-swarm1
-docker-machine create -d kvm dm-swarm2
-</code></pre></div></div>
-<h2 id="connect-to-vm">Connect to VM</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-machine ssh dm-swarm1
-</code></pre></div></div>
 </span>
         
         
@@ -310,7 +269,7 @@ docker-machine create -d kvm dm-swarm2
             haproxy, loadbalancing
         </small></div>
         <div class="suggest-edit">
-          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2019-02-4-loadbalancer-with-haproxy.md" target="_blank"> sugest a review?</a></p>
+          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2016-04-14-loadbalancer-with-haproxy.md" target="_blank"> sugest a review?</a></p>
         </div>
   
       </div>
@@ -351,10 +310,10 @@ docker-machine create -d kvm dm-swarm2
           </p>
           <p class="date">Publicado en 
           
-            Febrero
+            Abril
               
-            4
-             del 2019</p>
+            14
+             del 2016</p>
           
         </div>
         <div class="next previous-next">

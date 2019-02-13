@@ -5,8 +5,8 @@
     <description>Un espacio para compartir</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 06 Feb 2019 23:15:36 +0100</pubDate>
-    <lastBuildDate>Wed, 06 Feb 2019 23:15:36 +0100</lastBuildDate>
+    <pubDate>Wed, 13 Feb 2019 22:21:45 +0100</pubDate>
+    <lastBuildDate>Wed, 13 Feb 2019 22:21:45 +0100</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
     
       <item>
@@ -19,13 +19,12 @@ In this first post I’m going to talk about HAPROXY.&lt;/p&gt;
   &lt;li&gt;Environment.&lt;/li&gt;
   &lt;li&gt;Install haproxy.&lt;/li&gt;
   &lt;li&gt;Configure haproxy.cfg&lt;/li&gt;
-  &lt;li&gt;Config for a basic deployment. (Load Balancer Round-robin)&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;hr /&gt;
 
 &lt;h3 id=&quot;introducction&quot;&gt;Introducction.&lt;/h3&gt;
-&lt;h4 id=&quot;definition&quot;&gt;Definition.&lt;/h4&gt;
+&lt;h4 id=&quot;definition&quot;&gt;Definition:&lt;/h4&gt;
 &lt;p&gt;As the haproxy website said:   &lt;strong&gt;haproxy&lt;/strong&gt; is an Open Source Software to do Load Balancer
 and Application Delivery Controller.
 What does this mean?, basically you can use haproxy to route traffic regardless of the protocol,
@@ -48,29 +47,27 @@ The three most common approaches are:&lt;/p&gt;
   &lt;li&gt;&lt;strong&gt;balance source:&lt;/strong&gt;	Distribute each request to a particular server, based upon the hash of the source IP making that request.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;I’d imagine the most popular use-case though would be directing traffic to webservers. 
-In this next example we’ll show connections made to a single IP address can be passed to four backend hosts.&lt;/p&gt;
+&lt;p&gt;The most popular use-case though would be directing traffic to webservers. 
+In this next example I’ll show connections made to a single IP address can be passed to four backend hosts.&lt;/p&gt;
 
 &lt;h3 id=&quot;environment&quot;&gt;Environment&lt;/h3&gt;
-&lt;p&gt;In this case I’m going to configure HAPROXY to route http traffic.&lt;/p&gt;
+&lt;p&gt;The Environment will consist of 2 parts, the FrontEnd and the BackEnd.&lt;/p&gt;
 
-&lt;p&gt;To do that I’m going to create 4 docker nginx containers in the followings ports:&lt;/p&gt;
-
+&lt;p&gt;The FrontEnd is a machine with haproxy listening on 80 port :&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;haproxy port 8080&lt;/p&gt;
-  &lt;/li&gt;
+  &lt;li&gt;haproxy port 80&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;And The BackEnd are 4 nginx server listening on 8081 8082 8083 8084:&lt;/p&gt;
+&lt;ul&gt;
   &lt;li&gt;nginx1  port 8081&lt;/li&gt;
   &lt;li&gt;nginx2  port 8082&lt;/li&gt;
   &lt;li&gt;nginx3  port 8083&lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;nginx4  port 8084&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;mariadb port 3306&lt;/li&gt;
+  &lt;li&gt;nginx4  port 8084&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&quot;install-haproxy&quot;&gt;Install haproxy.&lt;/h3&gt;
-
+&lt;p&gt;In this case we are going to do the setup in Ubuntu:bionic:&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt-get update
 sudo apt-get install haproxy
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -92,10 +89,10 @@ defaults
         option  dontlognull
 
 #
-#  Listen on *:8080 - Send traffic to the backend named &quot;nginx&quot;
+#  Listen on *:80 - Send traffic to the backend named &quot;nginx&quot;
 #
 frontend www-http
-    bind *:8080
+    bind *:80
     default_backend nginx
 
 #
@@ -112,53 +109,15 @@ backend nginx
     server nginx4 10.0.0.40:8084 check
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;HAproxy Sticky sessions
-Health Checkup&lt;/p&gt;
+&lt;p&gt;In the backend we are specified to use mode http with balance roundrobin, also we have stick-table,
+this is keeping the session between the client and the final server.&lt;/p&gt;
 
-&lt;p&gt;Hacer otro post con haproxy-wi
-docker run -d –name haproxy-wi -v haproxy-wi:/var/www/haproxy-wi/app -p 8080:80 aidaho/haproxy-wi&lt;/p&gt;
+&lt;p&gt;In the next post I’ll deploy an haproxy using docker-compose.yml&lt;/p&gt;
 
-&lt;h3 id=&quot;docker-compose-to-test-in-a-easily&quot;&gt;Docker-compose to test in a easily&lt;/h3&gt;
-
-&lt;p&gt;vim docker-compose.yml&lt;/p&gt;
-
-&lt;p&gt;docker-compose up -d&lt;/p&gt;
-
-&lt;p&gt;I’m going to generate 4 connecting in a single IP address can be passed to four backend hosts.&lt;/p&gt;
-
-&lt;p&gt;To do this I’m going to create the following environment:&lt;/p&gt;
-
-&lt;p&gt;1 haproxy-server
-1 server with wordpress
-1 server with nginx&lt;/p&gt;
-
-&lt;h3 id=&quot;create-dockerfile&quot;&gt;Create DockerFile&lt;/h3&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;FROM haproxy:1.7
-COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;build-the-container&quot;&gt;Build the container&lt;/h3&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker build -t my-haproxy .
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;install-docker-machine&quot;&gt;Install Docker-Machine:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id=&quot;install-kvm-driver&quot;&gt;Install kvm driver:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.7.0/docker-machine-driver -o /usr/local/bin/docker-machine-driver-kvm
-sudo chmod +x /usr/local/bin/docker-machine-driver-kvm
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;create-vm&quot;&gt;Create VM:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine create -d kvm dm-swarm1
-docker-machine create -d kvm dm-swarm2
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id=&quot;connect-to-vm&quot;&gt;Connect to VM&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine ssh dm-swarm1
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
-        <pubDate>Mon, 04 Feb 2019 00:00:00 +0100</pubDate>
-        <link>/loadbalancer/2019/02/04/loadbalancer-with-haproxy/</link>
-        <guid isPermaLink="true">/loadbalancer/2019/02/04/loadbalancer-with-haproxy/</guid>
+        <pubDate>Thu, 14 Apr 2016 00:00:00 +0200</pubDate>
+        <link>/loadbalancer/2016/04/14/loadbalancer-with-haproxy/</link>
+        <guid isPermaLink="true">/loadbalancer/2016/04/14/loadbalancer-with-haproxy/</guid>
         
         <category>haproxy</category>
         
