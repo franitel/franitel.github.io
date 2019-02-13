@@ -1,8 +1,14 @@
 [
   
   {
-<<<<<<< HEAD
-=======
+    "title"    : "HAPROXY using docker-compose.",
+    "category" : "",
+    "tags"     : "haproxy, loadbalancing",
+    "url"      : "/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/",
+    "date"     : "2016-05-01 00:00:00 +0200"
+    } ,
+    
+  {
     "title"    : "Load Balancing with haproxy.",
     "category" : "",
     "tags"     : "haproxy, loadbalancing",
@@ -11,7 +17,6 @@
     } ,
     
   {
->>>>>>> post_haproxy
     "title"    : "Openshift pipeline Jenkins",
     "category" : "",
     "tags"     : "openshift, jenkins",

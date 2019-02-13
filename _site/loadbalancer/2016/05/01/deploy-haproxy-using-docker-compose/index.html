@@ -4,7 +4,7 @@
     <head>
 <meta charset="" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deploy Docker Swarm cluster multi-master.</title>
+<title>HAPROXY using docker-compose.</title>
 <meta name="description" content="Un espacio para compartir">
 
 <link rel="profile" href="http://gmpg.org/xfn/11" />
@@ -77,11 +77,11 @@
     <div itemscope itemtype="http://schema.org/Article" class="col-md-12 article">
       
       <div class="thumb">
-        <i class="fa fa-swarm fa-4x"></i>
+        <i class="fa fa-haproxy fa-4x"></i>
       </div>
       
 
-      <h1 class="header" itemprop="name">Deploy Docker Swarm cluster multi-master.</h1>
+      <h1 class="header" itemprop="name">HAPROXY using docker-compose.</h1>
 
       <div class="author">
         <small><i>
@@ -98,77 +98,201 @@
           <span itemprop="datePublished" content="2014-08-28">
             <!-- Snippet para establecer meses a español -->
             
-            January
+            May
               
-            23
+            1
              , 2016
           </span>
-          in docker category.
+          in loadbalancer category.
         </i></small>
       </div>
 
       <div class="read-time">
         <small>
-          1 minuto(s) de lectura
+          2 minuto(s) de lectura
         </small>
       </div>
 
       <div class="content-panel content">
       
+          This article is part of <i>«LoadBalancers»</i> series:
+          <ol class="series">
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+              <li>
+                
+                  
+                  
+                  <a href="/loadbalancer/2016/04/14/loadbalancer-with-haproxy/">Load Balancing with haproxy.</a>
+                
+              </li>
+            
+          
+            
+              <li>
+                
+                  
+                  HAPROXY using docker-compose.
+                
+              </li>
+            
+          
+          </ol>
+        
         <hr>
-        <span itemprop="articleBody"><h3 id="description">Description</h3>
-<p>In this post I’m going to setup a docker swarm cluster using 3 nodes where all nodes are master.</p>
+        <span itemprop="articleBody"><p>In this second post about LoadBalancers we are going to deploy an haproxy in the easy way.</p>
 
-<h4 id="system-resources">System Resources</h4>
-<p>we need 3 centos 7 with the following configuration:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1  --&gt;  172.26.12.1
-swarm2  --&gt;  172.26.12.2
-swarm3  --&gt;  172.26.12.3
-</code></pre></div></div>
-<h4 id="install-docker-ce-in-all-servers">Install docker-ce in all servers</h4>
+<h3 id="contents">CONTENTS.</h3>
+<ul>
+  <li>Introduction</li>
+  <li>Environment</li>
+  <li>Deploy haproxy</li>
+</ul>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarmX#&gt; sudo yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
-swarmX#&gt; sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-swarmX#&gt; sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-swarmX#&gt; sudo yum install docker-ce
-</code></pre></div></div>
+<hr />
 
-<h4 id="initialize-the-cluster-in-swarm1">Initialize the cluster in swarm1</h4>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt;   docker swarm init --advertise-addr 172.26.12.1
+<h3 id="introduction">Introduction</h3>
+<p>To deploy our haproxy we are going to use docker-compose.
+If you need to install docker compose you can do:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-get install python-pip
+pip install docker-compose
 </code></pre></div></div>
 
-<h4 id="show-the-tokens">Show the tokens</h4>
+<h3 id="environment">Environment</h3>
+<p>For this example we have 5 servers:
+1 HAproxy server.
+4 nginx servers.</p>
 
-<p>worker token</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt;  docker swarm join-token worker
+<p>The HAproxy is listening on port 80, when we recei</p>
+
+<h3 id="deploy-haproxy-with-4-nginx-servers">Deploy haproxy with 4 nginx servers</h3>
+<p>1) Clone my git repository with all files</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/franitel/load-balancer.git
+</code></pre></div></div>
+<p>2) Go to haproxy folder</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd haproxy
+</code></pre></div></div>
+<p>Now you can see some files, for now only we need to see the <a href="https://raw.githubusercontent.com/franitel/load-balancer/master/haproxy/docker-compose.yml">docker-compose.yml</a> file</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>haproxy:
+    image: haproxy:1.6
+    volumes:
+        - ./haproxy:/haproxy-override
+        - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    links:
+        - nginx1
+        - nginx2
+        - nginx3
+        - nginx4
+    ports:
+        - "80:80"
+        - "70:70"
+
+nginx1:
+    build: ./web
+    expose:
+        - 80
+nginx2:
+    build: ./web
+    expose:
+        - 80
+nginx3:
+    build: ./web
+    expose:
+        - 80
+nginx4:
+    build: ./web
+    expose:
+        - 80
+</code></pre></div></div>
+<p>Here we can see all our environment
+3) Run the docker-compose command</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose up -d
+</code></pre></div></div>
+<p>4) In http://localhost:70 port you can see the haproxy statistics</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>user:	  user
+password: pass
 </code></pre></div></div>
 
-<p>master token</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt;  docker swarm join-token manager
+<p>5) To check that all is working fine you can do:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose ps
 </code></pre></div></div>
+<p>6) Go to http://localhost</p>
 
-<h4 id="join-nodes-using-the-master-token--run-in-swarm2-and-swarm3">Join nodes using the master token. ( Run in swarm2 and swarm3)</h4>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm2#&gt; docker swarm join --token SWMTKN-1-4pipgzprgeee73d8h3hwwakp3dx6aes6dsgqs
+<p>Now you can refrest the website (F5) and on each refresch you will see the container hostname in the website, in my case:</p>
 
-swarm3#&gt; docker swarm join --token SWMTKN-1-4pipgzprgeee73d8h3hwwakp3dx6aes6dsgqs
+<ul>
+  <li>e40c136075cd</li>
+  <li>d282ca09a79e</li>
+  <li>c9e45c1bb0c3</li>
+  <li>41442643aefd</li>
+</ul>
+
+<p>7) Here you have the haproxy.cfg file</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  maxconn 4096
+
+defaults
+  log global
+  mode http
+  option httplog
+  option dontlognull
+  timeout connect 5000ms
+  timeout client 50000ms
+  timeout server 50000ms
+
+listen stats
+  bind 0.0.0.0:70
+  mode http
+  stats enable
+  stats hide-version
+  stats scope .
+  stats realm Haproxy\ Statistics
+  stats uri /
+  stats auth user:pass
+
+frontend balancer
+  bind 0.0.0.0:80
+  mode http
+  default_backend web_backends
+
+backend web_backends
+  mode http
+  option forwardfor
+  balance roundrobin
+  server nginx1 nginx1:80 check
+  server nginx2 nginx2:80 check
+  server nginx3 nginx3:80 check
+  server nginx4 nginx4:80 check
+  option httpchk GET /
+  http-check expect status 200
+
 </code></pre></div></div>
-
-<h4 id="check-nodes-in-the-cluster">check nodes in the cluster</h4>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt; docker node ls
-</code></pre></div></div>
-
-<h4 id="deploy-a-service-in-cluster-swarm">Deploy a service in cluster swarm</h4>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt; docker service create --replicas 3 -p 80:80 --name web1 serviceName nginx
-</code></pre></div></div>
-
-<h4 id="check-the-service">Check the service</h4>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swarm1#&gt; docker service ls
-swarm1#&gt; docker service ps web1
-</code></pre></div></div>
-
 </span>
         
+        
+          
         
 
         
@@ -180,10 +304,10 @@ swarm1#&gt; docker service ps web1
 
         <div class="tags"><small>
           <i class="fa fa-tags"></i>
-            docker, swarm
+            haproxy, loadbalancing
         </small></div>
         <div class="suggest-edit">
-          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2016-01-23-deploy-docker-swarm-cluster.md" target="_blank"> sugest a review?</a></p>
+          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2016-05-01-deploy-haproxy-using-docker-compose.md" target="_blank"> sugest a review?</a></p>
         </div>
   
       </div>
@@ -204,43 +328,33 @@ swarm1#&gt; docker service ps web1
       <div class="content-panel related clearfix">
         
         <div class="related-header">
-          <a href="/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/">Next Reading</a>
+          <a href="/loadbalancer/2016/04/14/loadbalancer-with-haproxy/">Next Reading</a>
         </div>
           <div class="title">
-            <a href="/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/">HAPROXY using docker-compose.</a>
+            <a href="/loadbalancer/2016/04/14/loadbalancer-with-haproxy/">Load Balancing with haproxy.</a>
           </div>
           <div class="excerpt">
              
-              Deploying HAproxy using docker-compose
+              Basic example deploying haproxy.
              
-            <a href="/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/">... continue reading</a>
+            <a href="/loadbalancer/2016/04/14/loadbalancer-with-haproxy/">... continue reading</a>
           </div>
         
         <hr />
         <div class="previous previous-next">
           
           <p>
-            <a href="/kvm/2015/09/07/docker-machine-static-ip/">Docker-Machine Static IP Address.</a>
+            <a href="/loadbalancer/2016/04/14/loadbalancer-with-haproxy/">Load Balancing with haproxy.</a>
           </p>
           <p class="date">Publicado en 
           
-            Enero
+            Mayo
               
-            23
+            1
              del 2016</p>
           
         </div>
         <div class="next previous-next">
-          
-          <p>
-            <a href="/k8s/2016/02/10/basic-kubernetes-setup/">Basic kubernetes setup.</a>
-          </p>
-          <p class="date">Publicado en 
-          
-            Enero
-              
-            23
-             del 2016</p>
           
         </div>
       </div>

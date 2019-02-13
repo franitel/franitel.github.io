@@ -5,16 +5,156 @@
     <description>Un espacio para compartir</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
-<<<<<<< HEAD
-    <pubDate>Mon, 04 Feb 2019 17:30:29 +0100</pubDate>
-    <lastBuildDate>Mon, 04 Feb 2019 17:30:29 +0100</lastBuildDate>
+    <pubDate>Thu, 14 Feb 2019 00:42:34 +0100</pubDate>
+    <lastBuildDate>Thu, 14 Feb 2019 00:42:34 +0100</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
     
       <item>
-=======
-    <pubDate>Wed, 13 Feb 2019 22:21:45 +0100</pubDate>
-    <lastBuildDate>Wed, 13 Feb 2019 22:21:45 +0100</lastBuildDate>
-    <generator>Jekyll v3.1.6</generator>
+        <title>HAPROXY using docker-compose.</title>
+        <description>&lt;p&gt;In this second post about LoadBalancers we are going to deploy an haproxy in the easy way.&lt;/p&gt;
+
+&lt;h3 id=&quot;contents&quot;&gt;CONTENTS.&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;Introduction&lt;/li&gt;
+  &lt;li&gt;Environment&lt;/li&gt;
+  &lt;li&gt;Deploy haproxy&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;introduction&quot;&gt;Introduction&lt;/h3&gt;
+&lt;p&gt;To deploy our haproxy we are going to use docker-compose.
+If you need to install docker compose you can do:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-get install python-pip
+pip install docker-compose
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;environment&quot;&gt;Environment&lt;/h3&gt;
+&lt;p&gt;For this example we have 5 servers:
+1 HAproxy server.
+4 nginx servers.&lt;/p&gt;
+
+&lt;p&gt;The HAproxy is listening on port 80, when we recei&lt;/p&gt;
+
+&lt;h3 id=&quot;deploy-haproxy-with-4-nginx-servers&quot;&gt;Deploy haproxy with 4 nginx servers&lt;/h3&gt;
+&lt;p&gt;1) Clone my git repository with all files&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/franitel/load-balancer.git
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;2) Go to haproxy folder&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd haproxy
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Now you can see some files, for now only we need to see the &lt;a href=&quot;https://raw.githubusercontent.com/franitel/load-balancer/master/haproxy/docker-compose.yml&quot;&gt;docker-compose.yml&lt;/a&gt; file&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;haproxy:
+    image: haproxy:1.6
+    volumes:
+        - ./haproxy:/haproxy-override
+        - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    links:
+        - nginx1
+        - nginx2
+        - nginx3
+        - nginx4
+    ports:
+        - &quot;80:80&quot;
+        - &quot;70:70&quot;
+
+nginx1:
+    build: ./web
+    expose:
+        - 80
+nginx2:
+    build: ./web
+    expose:
+        - 80
+nginx3:
+    build: ./web
+    expose:
+        - 80
+nginx4:
+    build: ./web
+    expose:
+        - 80
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Here we can see all our environment
+3) Run the docker-compose command&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-compose up -d
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;4) In http://localhost:70 port you can see the haproxy statistics&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;user:	  user
+password: pass
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;5) To check that all is working fine you can do:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-compose ps
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;6) Go to http://localhost&lt;/p&gt;
+
+&lt;p&gt;Now you can refrest the website (F5) and on each refresch you will see the container hostname in the website, in my case:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;e40c136075cd&lt;/li&gt;
+  &lt;li&gt;d282ca09a79e&lt;/li&gt;
+  &lt;li&gt;c9e45c1bb0c3&lt;/li&gt;
+  &lt;li&gt;41442643aefd&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;7) Here you have the haproxy.cfg file&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  maxconn 4096
+
+defaults
+  log global
+  mode http
+  option httplog
+  option dontlognull
+  timeout connect 5000ms
+  timeout client 50000ms
+  timeout server 50000ms
+
+listen stats
+  bind 0.0.0.0:70
+  mode http
+  stats enable
+  stats hide-version
+  stats scope .
+  stats realm Haproxy\ Statistics
+  stats uri /
+  stats auth user:pass
+
+frontend balancer
+  bind 0.0.0.0:80
+  mode http
+  default_backend web_backends
+
+backend web_backends
+  mode http
+  option forwardfor
+  balance roundrobin
+  server nginx1 nginx1:80 check
+  server nginx2 nginx2:80 check
+  server nginx3 nginx3:80 check
+  server nginx4 nginx4:80 check
+  option httpchk GET /
+  http-check expect status 200
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Sun, 01 May 2016 00:00:00 +0200</pubDate>
+        <link>/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/</link>
+        <guid isPermaLink="true">/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/</guid>
+        
+        <category>haproxy</category>
+        
+        <category>loadbalancing</category>
+        
+        
+        <category>loadbalancer</category>
+        
+      </item>
     
       <item>
         <title>Load Balancing with haproxy.</title>
@@ -136,7 +276,6 @@ this is keeping the session between the client and the final server.&lt;/p&gt;
       </item>
     
       <item>
->>>>>>> post_haproxy
         <title>Openshift pipeline Jenkins</title>
         <description>&lt;p&gt;In this tutorial we are going to create a jenkins server in openshift and we are going to create a pipeline to build a Docker container using a Dockerfile that is in my franitel.github.com repository.&lt;/p&gt;
 
@@ -746,37 +885,6 @@ ifconfig eth0 192.168.17.101 netmask 255.255.255.0 up
         <category>docker</category>
         
         <category>docker-machine</category>
-        
-        
-        <category>kvm</category>
-        
-      </item>
-    
-      <item>
-        <title>Docker-Machine with kvm driver.</title>
-        <description>&lt;h2 id=&quot;install-docker-machine&quot;&gt;Install Docker-Machine:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -L https://github.com/docker/machine/releases/download/v0.15.0/docker-machine-$(uname -s)-$(uname -m)
-chmod +x /tmp/docker-machine &amp;amp;&amp;amp;
-sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id=&quot;install-kvm-driver&quot;&gt;Install kvm driver:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.7.0/docker-machine-driver -o /usr/local/bin/docker-machine-driver-kvm
-sudo chmod +x /usr/local/bin/docker-machine-driver-kvm
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;create-vm&quot;&gt;Create VM:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine create -d kvm dm-swarm1
-docker-machine create -d kvm dm-swarm2
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id=&quot;connect-to-vm&quot;&gt;Connect to VM&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine ssh dm-swarm1
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-</description>
-        <pubDate>Sun, 06 Sep 2015 00:00:00 +0200</pubDate>
-        <link>/kvm/2015/09/06/docker-machine-with-kvm-driver/</link>
-        <guid isPermaLink="true">/kvm/2015/09/06/docker-machine-with-kvm-driver/</guid>
-        
-        <category>kvm</category>
         
         
         <category>kvm</category>
