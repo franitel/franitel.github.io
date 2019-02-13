@@ -1,6 +1,17 @@
 [
   
   {
+<<<<<<< HEAD
+=======
+    "title"    : "Load Balancing with haproxy.",
+    "category" : "",
+    "tags"     : "haproxy, loadbalancing",
+    "url"      : "/loadbalancer/2016/04/14/loadbalancer-with-haproxy/",
+    "date"     : "2016-04-14 00:00:00 +0200"
+    } ,
+    
+  {
+>>>>>>> post_haproxy
     "title"    : "Openshift pipeline Jenkins",
     "category" : "",
     "tags"     : "openshift, jenkins",

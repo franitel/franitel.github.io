@@ -56,7 +56,7 @@ ul {
   width: 100%; }
   @media (min-width: 768px) {
     .header {
-      font-size: 40px;
+      font-size: 62px;
       margin-left: -10%;
       width: 120%; } }
 
@@ -98,17 +98,11 @@ ul {
 .links {
   margin-top: 50px;
   text-align: center; }
-  .links img {
-      width: 3.5em;
-      padding-bottom: 8px;}
-      @media (max-width: 768px) {
-        .links img {width: 3em;}
-      }
-  .links i, .links img {
+  .links i {
     padding-left: 5px;
     padding-right: 5px; }
     @media (min-width: 768px) {
-      .links i, .links img {
+      .links i {
         padding-left: 10px;
         padding-right: 10px; } }
   .links .fa {
@@ -122,14 +116,11 @@ ul {
   .links .fa-google-plus:hover {
     color: #c95644; }
   .links .fa-github-alt:hover {
-    color: #000; }
+    color: #f6c2a4; }
   .links .fa-stack-overflow:hover {
     color: #c98b3b; }
-  .links .fa-codepen:hover {
-    color: #121212; }
-  .links .fa-duolingo:hover {
-    opacity: 0.5;
-  }  
+  .links .fa-rss:hover {
+    color: #eea33a; }
 
 /* Index */
 .index {
@@ -151,6 +142,8 @@ ul {
       .index .header {
         margin-left: -10%;
         width: 120%; } }
+  .index .categories {
+    font-size: 22px; }
   .index .content-panel:nth-of-type(1) {
     border-bottom: 10px solid #3CA2A2; }
   .index .author-header {
@@ -170,7 +163,7 @@ ul {
   .index .row {
     height: 100%;
     max-height: 100%;
-    margin-top: 30px; /*eran 60px, el espacio entre la descripcion y los links de redes sociales del index*/
+    margin-top: 60px;
     margin-left: 0px;
     margin-right: 0px; }
   .index .gravatar {
@@ -181,7 +174,7 @@ ul {
     text-align: center;
     margin-top: 30px; }
     .index .author-text b {
-      font-size: 42px; }
+      font-size: 32px; }
   .index .articles {
     text-align: center;
     font-size: 20px; }
@@ -342,7 +335,7 @@ ul {
       padding-bottom: 10px; }
       @media (min-width: 768px) {
         .single .article .content {
-          font-size: 18px;
+          font-size: 24px;
           padding-left: 30px;
           padding-right: 30px;
           padding-top: 40px;
@@ -353,8 +346,10 @@ ul {
         display: block;
         margin-left: auto;
         margin-right: auto; }
-      .single .article .content li {
+      .single .article .content ul {
         list-style-type: disc; }
+      .single .article .content ol {
+        list-style-type: decimal; }
       .single .article .content blockquote {
         position: relative;
         width: 100%;
@@ -378,7 +373,6 @@ ul {
           font-family: "Times New Roman";
           color: #969696;
           content: "“";
-          /*content: "$$$$$";*/
           position: absolute;
           top: 15px;
           left: 15px;
@@ -389,16 +383,16 @@ ul {
       .single .article .content .aligncenter {
         display: block;
         margin: 5px auto 5px auto; }
-      .single .article .content .highlight{/*Editado*/
+      .single .article .content .highlight {
         width: 100%;
         margin-left: -15px;
         padding-right: 45px;
         box-sizing: content-box; }
         @media (min-width: 768px) {
-          .single .article .content .highlight{/*Editado*/
-            margin-left: 2px;
+          .single .article .content .highlight {
+            margin-left: -30px;
             padding-right: 60px; } }
-        .single .article .content .highlight pre{/*Editado*/
+        .single .article .content .highlight pre {
           width: 100%;
           font-family: 'Anonymous Pro';
           background-color: #21211E;
@@ -414,7 +408,7 @@ ul {
           margin-bottom: 10px;
           margin-top: 10px; }
           @media (min-width: 768px) {
-            .single .article .content .highlight pre{/*Editado*/
+            .single .article .content .highlight pre {
               padding-left: 50px;
               padding-right: 10px;
               margin-bottom: 40px;
@@ -508,98 +502,29 @@ ul {
     margin-top: 20px;
     margin-bottom: 20px; }
 
-.suggest-edit{
-  font-size:14px;
-  font-style:italic;
-  text-align:center;
-}
-
-pre {
-  border:none;
-  background-color: #21211E;
-}
-
-.figures{
-  -webkit-background-size: cover !important;
-  -moz-background-size: cover !important;
-  background-size: cover !important;
-  height: 25rem !important;
-  border: solid 2px #3CA2A2 !important;
-  border-radius: 4px !important;
-}
-
-.rabbit-fold{
-  background-image: url("../images/about/rabbit.jpg");
-  
-}
-.elephant-fold{
-  background-image: url("../images/about/elephant.jpg");
-}
-
-.clavel-fold{
-  background-image: url("../images/about/clavel.jpg");
-}
-
-.rat-fold{
-  background-image: url("../images/about/rat.png");
-}
-
-.lion-fold{
-  background-image: url("../images/about/lion.png");
-}
-
-.flamingo-fold{
-  background-image: url("../images/about/flamingo.jpg");
-}
- @media screen and (max-width: 992px) {
-  .rabbit-fold, .elephant-fold, .clavel-fold, .rat-fold, .lion-fold, .flamingo-fold{
-    height: 220px;
-    width: 220px;
-    margin: auto;
-  }
-} 
-
-.panel-heading, .panel-footer, .panel-default{
-  background-color: #2D2D29 !important;
-}
-
-.panel-heading h3{
-  color: #3CA2A2;
-}
-
-.panel-footer .more{
-  width: 30px;
-  margin: 0 auto;
-}
-.panel-footer .more-demo{
-  width: 80px;
-  margin: 0 auto; 
-}
-.series {
-  margin-bottom: 50px;}
+.btn-categories {
+  background-color: #3CA2A2;
+  border-color: #3CA2A2;
+  color: #FFFFFF; }
+  .btn-categories:hover {
+    background-color: #215A6D;
+    border-color: #215A6D;
+    color: #FFFFFF; }
+  .btn-categories:active {
+    background-color: #215A6D;
+    border-color: #215A6D;
+    color: #FFFFFF; }
+  .btn-categories:focus {
+    background-color: #215A6D;
+    border-color: #215A6D;
+    color: #FFFFFF; }
 
 .dropdown-menu {
   background-color: #3CA2A2;
-  color: #FFFFFF;
-}    
-.dropdown-menu > li > a {
-  background-color: #3CA2A2;
-  color: #FFFFFF;
-}
-
-.dropdown-menu > li > a:hover {
-  background-color: #215A6D;
-  color: #FFFFFF;
-}
-
-.next-series{
-  font-size:16px;
-}
-
-.article-galeria{
-  font-size: 20px !important; 
-  margin-bottom: 1px !important;
-}
-.article-galeria ul li{
-  list-style: none !important;
-}
+  color: #FFFFFF; }
+  .dropdown-menu > li > a {
+    background-color: #3CA2A2;
+    color: #FFFFFF; }
+    .dropdown-menu > li > a:hover {
+      background-color: #215A6D;
+      color: #FFFFFF; }

@@ -73,7 +73,7 @@ layout: default
 
       <div class="content-panel content">
       {% if page.series %}
-          Este artículo hace parte de la serie <i>«{{ page.series }}»</i>:
+          This article is part of <i>«{{ page.series }}»</i> series:
           <ol class="series">
           {% for apost in site.posts reversed %}
             {% if page.series == apost.series %}
@@ -93,7 +93,7 @@ layout: default
           {% endfor %}
           </ol>
         {% endif %}
-
+        <hr>
         <span itemprop="articleBody">{{ content }}</span>
         
         {% if page.series %}
