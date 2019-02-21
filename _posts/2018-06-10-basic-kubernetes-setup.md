@@ -9,6 +9,7 @@ thumbnail:  k8s
 tags:
 - k8s
 ---
+Today I'm going to do a Basic kubernetes cluster.
 
 ## REQUIREMENTS
 

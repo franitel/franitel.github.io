@@ -12,7 +12,7 @@ tags:
 - namespace
 ---
 
-In this first deploy I'm going to deploy a simple nginx server, but I'm going to use namespace and resource limitation.
+In this deployment I'm going to a expose a simple nginx server, but I'm going to use namespace and resource limitation.
 
 ### Definitions:
 

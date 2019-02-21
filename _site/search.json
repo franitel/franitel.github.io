@@ -20,16 +20,16 @@
     "title"    : "kubernetes Basic deployment (namespace and resource limitation)",
     "category" : "",
     "tags"     : "k8s, nginx, namespace",
-    "url"      : "/kubernetes/2018/06/12/kubernetes-basic-deployment/",
-    "date"     : "2018-06-12 00:00:00 +0200"
+    "url"      : "/kubernetes/2018/08/12/kubernetes-basic-deployment/",
+    "date"     : "2018-08-12 00:00:00 +0200"
     } ,
     
   {
     "title"    : "Kubernetes Dashboard.",
     "category" : "",
     "tags"     : "k8s",
-    "url"      : "/k8s/2018/06/11/kubernetes-dashboard/",
-    "date"     : "2018-06-11 00:00:00 +0200"
+    "url"      : "/k8s/2018/07/21/kubernetes-dashboard/",
+    "date"     : "2018-07-21 00:00:00 +0200"
     } ,
     
   {
