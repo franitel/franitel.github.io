@@ -13,7 +13,7 @@ tags:
 
 ## Description:
 
-In this post we are going to create a secret in k8s and give access to this one in a specific pod by 2 ways.
+Hello I'm going to continue with the kubernetes series, and in this post I'm going to create a secret in k8s and give access to this one in a specific pod by 2 ways.
 
 _Steps:_
 
