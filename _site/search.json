@@ -1,6 +1,46 @@
 [
   
   {
+    "title"    : "kubernetes Credentials and Secrets",
+    "category" : "",
+    "tags"     : "k8s, kubernetes",
+    "url"      : "/kubernetes/2018/07/08/k8s-credentials-and-secrets/",
+    "date"     : "2018-07-08 00:00:00 +0200"
+    } ,
+    
+  {
+    "title"    : "kubernetes Basic deployment (namespace and resource limitation)",
+    "category" : "",
+    "tags"     : "k8s, nginx, namespace",
+    "url"      : "/kubernetes/2018/06/12/kubernetes-basic-deployment/",
+    "date"     : "2018-06-12 00:00:00 +0200"
+    } ,
+    
+  {
+    "title"    : "Kubernetes Dashboard.",
+    "category" : "",
+    "tags"     : "k8s",
+    "url"      : "/k8s/2018/06/11/kubernetes-dashboard/",
+    "date"     : "2018-06-11 00:00:00 +0200"
+    } ,
+    
+  {
+    "title"    : "Openshift: Create project, Deploy and Expose an APP.",
+    "category" : "",
+    "tags"     : "openshift",
+    "url"      : "/openshift/2018/04/01/openshift-deploy-app/",
+    "date"     : "2018-04-01 00:00:00 +0200"
+    } ,
+    
+  {
+    "title"    : "Deploy Jenkins using docker-compose.",
+    "category" : "",
+    "tags"     : "jenkins, CICD",
+    "url"      : "/jenkins/2016/05/15/deploy-jenkins-as-container/",
+    "date"     : "2016-05-15 00:00:00 +0200"
+    } ,
+    
+  {
     "title"    : "HAPROXY using docker-compose.",
     "category" : "",
     "tags"     : "haproxy, loadbalancing",
@@ -22,38 +62,6 @@
     "tags"     : "openshift, jenkins",
     "url"      : "/openshift/2016/04/10/openshift-pipeline/",
     "date"     : "2016-04-10 00:00:00 +0200"
-    } ,
-    
-  {
-    "title"    : "Openshift: Create project, Deploy and Expose an APP.",
-    "category" : "",
-    "tags"     : "openshift",
-    "url"      : "/openshift/2016/04/01/openshift-deploy-app/",
-    "date"     : "2016-04-01 00:00:00 +0200"
-    } ,
-    
-  {
-    "title"    : "kubernetes Credentials and Secrets",
-    "category" : "",
-    "tags"     : "k8s, kubernetes",
-    "url"      : "/kubernetes/2016/03/08/k8s-credentials-and-secrets/",
-    "date"     : "2016-03-08 00:00:00 +0100"
-    } ,
-    
-  {
-    "title"    : "kubernetes Basic deployment (namespace and resource limitation)",
-    "category" : "",
-    "tags"     : "k8s, nginx, namespace",
-    "url"      : "/kubernetes/2016/02/12/kubernetes-basic-deployment/",
-    "date"     : "2016-02-12 00:00:00 +0100"
-    } ,
-    
-  {
-    "title"    : "Kubernetes Dashboard.",
-    "category" : "",
-    "tags"     : "k8s",
-    "url"      : "/k8s/2016/02/11/kubernetes-dashboard/",
-    "date"     : "2016-02-11 00:00:00 +0100"
     } ,
     
   {

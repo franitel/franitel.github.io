@@ -5,9 +5,595 @@
     <description>Un espacio para compartir</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 14 Feb 2019 00:42:34 +0100</pubDate>
-    <lastBuildDate>Thu, 14 Feb 2019 00:42:34 +0100</lastBuildDate>
+    <pubDate>Thu, 21 Feb 2019 10:45:56 +0100</pubDate>
+    <lastBuildDate>Thu, 21 Feb 2019 10:45:56 +0100</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
+    
+      <item>
+        <title>kubernetes Credentials and Secrets</title>
+        <description>&lt;h2 id=&quot;description&quot;&gt;Description:&lt;/h2&gt;
+
+&lt;p&gt;In this post we are going to create a secret in k8s and give access to this one in a specific pod by 2 ways.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Steps:&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1) Create a Secret base64.
+2) Pod with access to the secret through a Volume.
+3) Pod with access to the secret trhough environment variables.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;1) Create a Secret base64.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The reason to create the secret on base64 is a way of representing binary data using only printable (text) characters.&lt;/p&gt;
+
+&lt;h4 id=&quot;create-the-secret&quot;&gt;Create the secret&lt;/h4&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;echo -n user | base64
+dXNlcg==
+echo -n password | base64
+cGFzc3dvcmQ=
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we have the user and password in base64 format, in the next step we are going to create this secret in k8s (kubernetes).&lt;/p&gt;
+
+&lt;p&gt;vim secret.yaml&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+data:
+  username: dXNlcg==
+  password: cGFzc3dvcmQ=
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f secret.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;hr /&gt;
+&lt;p&gt;&lt;strong&gt;2) Pod with access to the secret through a Volume.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;vim pod-secret-volume.yaml&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-secret-pod
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+      volumeMounts:
+          # name must match the volume name below
+          - name: secret-volume
+            mountPath: /etc/secret-volume
+  # The secret data is exposed to Containers in the Pod through a Volume.
+  volumes:
+    - name: secret-volume
+      secret:
+        secretName: test-secret
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;now create the pod:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f pod-secret-volume.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;CHECK THE SECRETS INSIDE POD&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl exec -it nginx-secret-pod -- /bin/bash
+root@nginx-secret-pod:/# cd /etc/secret-volume
+root@nginx-secret-:/etc/secret-volume# cat username; echo; cat password; echo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The output is your username and your password:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;user
+password
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;hr /&gt;
+&lt;p&gt;&lt;strong&gt;3) Pod with access to the secret trhough environment variables.&lt;/strong&gt;
+vim pod-secret-envars.yaml&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-envars-pod
+spec:
+  containers:
+  - name: nginx-envars-container
+    image: nginx
+    env:
+    - name: SECRET_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: test-secret
+          key: username
+    - name: SECRET_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: test-secret
+          key: password
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now create the pod:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f pod-secret-envars.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;CHECK THE SECRETS INSIDE POD&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl exec -it secret-envars-pod -- /bin/bash
+root@secret-envars-pod:/# printenv
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The output is your username and your password:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;...
+SECRET_USERNAME=user
+...
+SECRET_PASSWORD=password
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Sun, 08 Jul 2018 00:00:00 +0200</pubDate>
+        <link>/kubernetes/2018/07/08/k8s-credentials-and-secrets/</link>
+        <guid isPermaLink="true">/kubernetes/2018/07/08/k8s-credentials-and-secrets/</guid>
+        
+        <category>k8s</category>
+        
+        <category>kubernetes</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>kubernetes Basic deployment (namespace and resource limitation)</title>
+        <description>&lt;p&gt;In this first deploy I’m going to deploy a simple nginx server, but I’m going to use namespace and resource limitation.&lt;/p&gt;
+
+&lt;h3 id=&quot;definitions&quot;&gt;Definitions:&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1) NAMESPACES: 
+   Kubernetes supports multiple virtual clusters backed by the same physical cluster. These virtual clusters are called namespaces. Namespaces are intended for use in environments with many users spread across multiple teams, or projects.
+
+2) MEMORY: &quot;256Mi&quot;: 
+   256Mi is equal to 256 MegaBytes.
+
+3) CPU: &quot;1000m&quot;: 
+   One thousand MilliCPUs is equal to 1 CPU, you can use 500m or &quot;0,5&quot; to specify 1/2 CPU
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;kubernetes-example-deployment&quot;&gt;Kubernetes Example Deployment&lt;/h3&gt;
+
+&lt;p&gt;In this basic example I’m going to do the following steps:
+	1) Create a namespace
+	2) Create a Nginx Deployment
+	3) Create a Nginx Service
+	4) Expose and access the Nginx Service&lt;/p&gt;
+
+&lt;h2 id=&quot;clone-my-respository&quot;&gt;Clone my respository&lt;/h2&gt;
+
+&lt;h2 id=&quot;create-a-namespace-&quot;&gt;Create a namespace ()&lt;/h2&gt;
+&lt;p&gt;vim namespace-demo.yaml&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
+kind: Namespace
+metadata:
+  name: namespace-demo
+  labels:
+    apps: web-based
+  annotations:
+    type: demo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f namespace-demo.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;assign-resource-quota-to-namespace&quot;&gt;Assign Resource Quota To Namespace&lt;/h2&gt;
+
+&lt;p&gt;vim quota-namespace-demo.yaml&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: cpu-mem-quota
+  namespace: namespace-demo
+spec:
+  hard:
+    requests.cpu: &quot;4&quot;
+    requests.memory: 8Gi
+    limits.cpu: &quot;8&quot;
+    limits.memory: 16Gi
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f quota-namespace-demo.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;create-a-deployment-in-namespace-demo&quot;&gt;Create A Deployment in namespace-demo&lt;/h2&gt;
+&lt;p&gt;vim deployment.yaml&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+  namespace: namespace-demo
+  annotations:
+    monitoring: &quot;true&quot;
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: &quot;2Gi&quot;
+            cpu: &quot;1000m&quot;
+          requests: 
+            memory: &quot;1Gi&quot;
+            cpu: &quot;500m&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f deployment.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Check the deployment&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get deployments -n namespace-demo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;create-a-service-and-expose-the-deployment&quot;&gt;Create A Service And Expose The Deployment&lt;/h2&gt;
+
+&lt;p&gt;vim service-demo.yaml&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx
+  name: nginx
+  namespace: namespace-demo
+spec:
+  ports:
+  - nodePort: 31111
+    port: 80	
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+  type: NodePort
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f service-demo.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Now you can see the service created running the following command:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get services  -n namespace-demo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;connect-to-the-nginx-service&quot;&gt;Connect to the nginx service&lt;/h2&gt;
+&lt;p&gt;To connect 
+http://[kubernete-server-ip]:31111&lt;/p&gt;
+
+&lt;p&gt;##&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Tue, 12 Jun 2018 00:00:00 +0200</pubDate>
+        <link>/kubernetes/2018/06/12/kubernetes-basic-deployment/</link>
+        <guid isPermaLink="true">/kubernetes/2018/06/12/kubernetes-basic-deployment/</guid>
+        
+        <category>k8s</category>
+        
+        <category>nginx</category>
+        
+        <category>namespace</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>Kubernetes Dashboard.</title>
+        <description>&lt;h3 id=&quot;install-kubernetes-dashboard&quot;&gt;Install &lt;strong&gt;kubernetes-dashboard&lt;/strong&gt;.&lt;/h3&gt;
+&lt;p&gt;To install the kubernetes dashboard run the following command on the kubernetes master:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h3 id=&quot;dashboard-access&quot;&gt;Dashboard Access&lt;/h3&gt;
+&lt;p&gt;To Dashboard access from your local workstation you must create a secure channel to your Kubernetes cluster, for it you need run the following command, remember that you need to have installed in your local machien kubectl and config file in your ~/.kube folder.&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl proxy
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now the channel is open and you can connect to kubernetes Dashboard in:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;login&quot;&gt;Login&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/k8s-dashboard-login.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Get the credential using this command:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get secrets -n kube-system | grep default-token | awk &#39;{print $1}&#39; | xargs -I &#39;{}&#39; kubectl describe secret {} -n kube-system | grep token: | awk &#39;{print $2}&#39;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;You can get something like this:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pbya56514676
+7J2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUi7
+OiJkZWZhdWx0LXRva2VuLWhncTRtIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImRlZmF1
+bHQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI2OWY1NzA2Ni1mZDkwLTExZTgtOTYxMi1m
+ZTA5YWU5Mjk2OTUiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCJ9.CaTwQ1FxBC4VFGWvjOY9kJ9
+dasdfg6566GG433hhhSEEWksIMOSnALCq4aOvgsg4Se1Zi0AZ5y5bZlaoX8OCKGcfBgtMP_w_BgqFb0OPxANEJMTxf5zfN4DTw57aGsTBbST
+qpvODiXSrBb9d1pxUF9r6kVoCMhh4DpHoUSLEpvuUtE2CSs0Eb6ozAUhWG5nhpA03aKOHNMrC4aXVLp75dJBdjaQBUXYS7IP2DSWTyGVYW0r
+ydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCaWNlaWNlaWNlun_jWoR2Nb
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Mon, 11 Jun 2018 00:00:00 +0200</pubDate>
+        <link>/k8s/2018/06/11/kubernetes-dashboard/</link>
+        <guid isPermaLink="true">/k8s/2018/06/11/kubernetes-dashboard/</guid>
+        
+        <category>k8s</category>
+        
+        
+        <category>k8s</category>
+        
+      </item>
+    
+      <item>
+        <title>Openshift: Create project, Deploy and Expose an APP.</title>
+        <description>&lt;h3 id=&quot;requirements&quot;&gt;Requirements:&lt;/h3&gt;
+&lt;p&gt;For this example you need openshift origin (okd) deployed locally, with access to the oc command.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;1) Create project (fran-project)&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-project fran-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;2) select the project&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc project fran-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;3) Deploy an app in fran-project&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-app kubernetes/guestbook --name=guestbook
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;4) Create route to expose our app&lt;/p&gt;
+
+&lt;p&gt;vim route-guestbook.yaml&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: guestbook
+  name: guestbook
+  namespace: fran-project
+  selfLink: /apis/route.openshift.io/v1/namespaces/fran-project/routes/guestbook
+spec:
+  host: guestbook-fran-project.127.0.0.1.nip.io
+  port:
+    targetPort: 3000-tcp
+  to:
+    kind: Service
+    name: guestbook
+    weight: 100
+  wildcardPolicy: None
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Create the route:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc create -f route-guestbook.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;5) Go to &lt;a href=&quot;http://guestbook-fran-project.127.0.0.1.nip.io&quot;&gt;http://guestbook-fran-project.127.0.0.1.nip.io&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;then you will see:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2016-04-01-openshift-deploy-app.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 01 Apr 2018 00:00:00 +0200</pubDate>
+        <link>/openshift/2018/04/01/openshift-deploy-app/</link>
+        <guid isPermaLink="true">/openshift/2018/04/01/openshift-deploy-app/</guid>
+        
+        <category>openshift</category>
+        
+        
+        <category>openshift</category>
+        
+      </item>
+    
+      <item>
+        <title>Deploy Jenkins using docker-compose.</title>
+        <description>&lt;p&gt;In this case I’m going to deploy Jenkins
+To do this I’m going to deploy a Jenkins server in a docker container&lt;/p&gt;
+
+&lt;h3 id=&quot;contents&quot;&gt;CONTENTS.&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;Introduction&lt;/li&gt;
+  &lt;li&gt;Environment&lt;/li&gt;
+  &lt;li&gt;Deploy Jekins as docker container.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;introduction&quot;&gt;Introduction&lt;/h3&gt;
+&lt;p&gt;To deploy our Jenkins I’m going to use docker-compose.
+If you need to install docker compose you can do:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-get install python-pip
+pip install docker-compose
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;environment&quot;&gt;Environment&lt;/h3&gt;
+&lt;p&gt;For this example we have a Jenkin server running as docker container listening on 8080 port.&lt;/p&gt;
+
+&lt;h3 id=&quot;dockerfile&quot;&gt;Dockerfile&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#-------------------------------------------------------
+#
+# Dockerfile to building alpine JENKINS with docker inside
+#
+# build via &#39;docker build -t franitel/jenkins .&#39;
+#
+# Run via &#39;docker container run -d -p 8080:8080 -v /var/run/docker.sock:/var/run
+#-------------------------------------------------------
+from jenkinsci/blueocean
+MAINTAINER franitel &amp;lt;&quot;franitel@hotmail.com&quot;&amp;gt;
+
+USER root
+RUN apk --no-cache add shadow &amp;amp;&amp;amp; usermod -aG docker jenkins
+RUN apk --no-cache add sudo
+RUN echo &quot;jenkins ALL=(ALL) NOPASSWD: ALL&quot; &amp;gt;&amp;gt; /etc/sudoers
+USER jenkins
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h3 id=&quot;build-our-jenkins-server&quot;&gt;Build our jenkins server.&lt;/h3&gt;
+&lt;p&gt;Download the Dockerfile from my github&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone ..asdf.as.dfa.fas.dfaf
+
+cd build
+
+docker build -t franitel/jenkins .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;create-the-docker-composeyml-file&quot;&gt;Create the docker-compose.yml file&lt;/h3&gt;
+
+&lt;p&gt;Now you can see some files, for now only we need to see the &lt;a href=&quot;https://raw.githubusercontent.com/franitel/load-balancer/master/haproxy/docker-compose.yml&quot;&gt;docker-compose.yml&lt;/a&gt; file&lt;/p&gt;
+
+&lt;p&gt;vim docker-compose.yml&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;version: &quot;3&quot;
+
+services:
+  jenkinsblue:
+    image: franitel/jenkins:latest
+    ports:
+      - 8080:8080
+      - 50000:50000
+    volumes:
+      - ./data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;1) Clone my git repository with all files&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/franitel/load-balancer.git
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;2) Go to haproxy folder&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd haproxy
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;haproxy:
+    image: haproxy:1.6
+    volumes:
+        - ./haproxy:/haproxy-override
+        - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    links:
+        - nginx1
+        - nginx2
+        - nginx3
+        - nginx4
+    ports:
+        - &quot;80:80&quot;
+        - &quot;70:70&quot;
+
+nginx1:
+    build: ./web
+    expose:
+        - 80
+nginx2:
+    build: ./web
+    expose:
+        - 80
+nginx3:
+    build: ./web
+    expose:
+        - 80
+nginx4:
+    build: ./web
+    expose:
+        - 80
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Here we can see all our environment
+3) Run the docker-compose command&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-compose up -d
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;4) In http://localhost:70 port you can see the haproxy statistics&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;user:	  user
+password: pass
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;5) To check that all is working fine you can do:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-compose ps
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;6) Go to http://localhost&lt;/p&gt;
+
+&lt;p&gt;Now you can refrest the website (F5) and on each refresch you will see the container hostname in the website, in my case:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;e40c136075cd&lt;/li&gt;
+  &lt;li&gt;d282ca09a79e&lt;/li&gt;
+  &lt;li&gt;c9e45c1bb0c3&lt;/li&gt;
+  &lt;li&gt;41442643aefd&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;7) Here you have the haproxy.cfg file&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  maxconn 4096
+
+defaults
+  log global
+  mode http
+  option httplog
+  option dontlognull
+  timeout connect 5000ms
+  timeout client 50000ms
+  timeout server 50000ms
+
+listen stats
+  bind 0.0.0.0:70
+  mode http
+  stats enable
+  stats hide-version
+  stats scope .
+  stats realm Haproxy\ Statistics
+  stats uri /
+  stats auth user:pass
+
+frontend balancer
+  bind 0.0.0.0:80
+  mode http
+  default_backend web_backends
+
+backend web_backends
+  mode http
+  option forwardfor
+  balance roundrobin
+  server nginx1 nginx1:80 check
+  server nginx2 nginx2:80 check
+  server nginx3 nginx3:80 check
+  server nginx4 nginx4:80 check
+  option httpchk GET /
+  http-check expect status 200
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Sun, 15 May 2016 00:00:00 +0200</pubDate>
+        <link>/jenkins/2016/05/15/deploy-jenkins-as-container/</link>
+        <guid isPermaLink="true">/jenkins/2016/05/15/deploy-jenkins-as-container/</guid>
+        
+        <category>jenkins</category>
+        
+        <category>CICD</category>
+        
+        
+        <category>jenkins</category>
+        
+      </item>
     
       <item>
         <title>HAPROXY using docker-compose.</title>
@@ -321,402 +907,6 @@ sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
       </item>
     
       <item>
-        <title>Openshift: Create project, Deploy and Expose an APP.</title>
-        <description>&lt;h3 id=&quot;requirements&quot;&gt;Requirements:&lt;/h3&gt;
-&lt;p&gt;For this example you need openshift origin (okd) deployed locally, with access to the oc command.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;1) Create project (fran-project)&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-project fran-project
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;2) select the project&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc project fran-project
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;3) Deploy an app in fran-project&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-app kubernetes/guestbook --name=guestbook
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;4) Create route to expose our app&lt;/p&gt;
-
-&lt;p&gt;vim route-guestbook.yaml&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  labels:
-    app: guestbook
-  name: guestbook
-  namespace: fran-project
-  selfLink: /apis/route.openshift.io/v1/namespaces/fran-project/routes/guestbook
-spec:
-  host: guestbook-fran-project.127.0.0.1.nip.io
-  port:
-    targetPort: 3000-tcp
-  to:
-    kind: Service
-    name: guestbook
-    weight: 100
-  wildcardPolicy: None
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;Create the route:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc create -f route-guestbook.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;5) Go to &lt;a href=&quot;http://guestbook-fran-project.127.0.0.1.nip.io&quot;&gt;http://guestbook-fran-project.127.0.0.1.nip.io&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;then you will see:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/2016-04-01-openshift-deploy-app.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-</description>
-        <pubDate>Fri, 01 Apr 2016 00:00:00 +0200</pubDate>
-        <link>/openshift/2016/04/01/openshift-deploy-app/</link>
-        <guid isPermaLink="true">/openshift/2016/04/01/openshift-deploy-app/</guid>
-        
-        <category>openshift</category>
-        
-        
-        <category>openshift</category>
-        
-      </item>
-    
-      <item>
-        <title>kubernetes Credentials and Secrets</title>
-        <description>&lt;h2 id=&quot;description&quot;&gt;Description:&lt;/h2&gt;
-
-&lt;p&gt;In this post we are going to create a secret in k8s and give access to this one in a specific pod by 2 ways.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Steps:&lt;/em&gt;&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1) Create a Secret base64.
-2) Pod with access to the secret through a Volume.
-3) Pod with access to the secret trhough environment variables.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;1) Create a Secret base64.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;The reason to create the secret on base64 is a way of representing binary data using only printable (text) characters.&lt;/p&gt;
-
-&lt;h4 id=&quot;create-the-secret&quot;&gt;Create the secret&lt;/h4&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;echo -n user | base64
-dXNlcg==
-echo -n password | base64
-cGFzc3dvcmQ=
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now we have the user and password in base64 format, in the next step we are going to create this secret in k8s (kubernetes).&lt;/p&gt;
-
-&lt;p&gt;vim secret.yaml&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
-kind: Secret
-metadata:
-  name: test-secret
-data:
-  username: dXNlcg==
-  password: cGFzc3dvcmQ=
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f secret.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;hr /&gt;
-&lt;p&gt;&lt;strong&gt;2) Pod with access to the secret through a Volume.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;vim pod-secret-volume.yaml&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx-secret-pod
-spec:
-  containers:
-    - name: nginx-container
-      image: nginx
-      volumeMounts:
-          # name must match the volume name below
-          - name: secret-volume
-            mountPath: /etc/secret-volume
-  # The secret data is exposed to Containers in the Pod through a Volume.
-  volumes:
-    - name: secret-volume
-      secret:
-        secretName: test-secret
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;now create the pod:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f pod-secret-volume.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;CHECK THE SECRETS INSIDE POD&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl exec -it nginx-secret-pod -- /bin/bash
-root@nginx-secret-pod:/# cd /etc/secret-volume
-root@nginx-secret-:/etc/secret-volume# cat username; echo; cat password; echo
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;The output is your username and your password:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;user
-password
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;hr /&gt;
-&lt;p&gt;&lt;strong&gt;3) Pod with access to the secret trhough environment variables.&lt;/strong&gt;
-vim pod-secret-envars.yaml&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
-kind: Pod
-metadata:
-  name: secret-envars-pod
-spec:
-  containers:
-  - name: nginx-envars-container
-    image: nginx
-    env:
-    - name: SECRET_USERNAME
-      valueFrom:
-        secretKeyRef:
-          name: test-secret
-          key: username
-    - name: SECRET_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: test-secret
-          key: password
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now create the pod:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f pod-secret-envars.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;CHECK THE SECRETS INSIDE POD&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl exec -it secret-envars-pod -- /bin/bash
-root@secret-envars-pod:/# printenv
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The output is your username and your password:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;...
-SECRET_USERNAME=user
-...
-SECRET_PASSWORD=password
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-</description>
-        <pubDate>Tue, 08 Mar 2016 00:00:00 +0100</pubDate>
-        <link>/kubernetes/2016/03/08/k8s-credentials-and-secrets/</link>
-        <guid isPermaLink="true">/kubernetes/2016/03/08/k8s-credentials-and-secrets/</guid>
-        
-        <category>k8s</category>
-        
-        <category>kubernetes</category>
-        
-        
-        <category>kubernetes</category>
-        
-      </item>
-    
-      <item>
-        <title>kubernetes Basic deployment (namespace and resource limitation)</title>
-        <description>&lt;p&gt;In this first deploy I’m going to deploy a simple nginx server, but I’m going to use namespace and resource limitation.&lt;/p&gt;
-
-&lt;h3 id=&quot;definitions&quot;&gt;Definitions:&lt;/h3&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1) NAMESPACES: 
-   Kubernetes supports multiple virtual clusters backed by the same physical cluster. These virtual clusters are called namespaces. Namespaces are intended for use in environments with many users spread across multiple teams, or projects.
-
-2) MEMORY: &quot;256Mi&quot;: 
-   256Mi is equal to 256 MegaBytes.
-
-3) CPU: &quot;1000m&quot;: 
-   One thousand MilliCPUs is equal to 1 CPU, you can use 500m or &quot;0,5&quot; to specify 1/2 CPU
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;kubernetes-example-deployment&quot;&gt;Kubernetes Example Deployment&lt;/h3&gt;
-
-&lt;p&gt;In this basic example I’m going to do the following steps:
-	1) Create a namespace
-	2) Create a Nginx Deployment
-	3) Create a Nginx Service
-	4) Expose and access the Nginx Service&lt;/p&gt;
-
-&lt;h2 id=&quot;clone-my-respository&quot;&gt;Clone my respository&lt;/h2&gt;
-
-&lt;h2 id=&quot;create-a-namespace-&quot;&gt;Create a namespace ()&lt;/h2&gt;
-&lt;p&gt;vim namespace-demo.yaml&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
-kind: Namespace
-metadata:
-  name: namespace-demo
-  labels:
-    apps: web-based
-  annotations:
-    type: demo
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f namespace-demo.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;assign-resource-quota-to-namespace&quot;&gt;Assign Resource Quota To Namespace&lt;/h2&gt;
-
-&lt;p&gt;vim quota-namespace-demo.yaml&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: cpu-mem-quota
-  namespace: namespace-demo
-spec:
-  hard:
-    requests.cpu: &quot;4&quot;
-    requests.memory: 8Gi
-    limits.cpu: &quot;8&quot;
-    limits.memory: 16Gi
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f quota-namespace-demo.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;create-a-deployment-in-namespace-demo&quot;&gt;Create A Deployment in namespace-demo&lt;/h2&gt;
-&lt;p&gt;vim deployment.yaml&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx
-  labels:
-    app: nginx
-  namespace: namespace-demo
-  annotations:
-    monitoring: &quot;true&quot;
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - image: nginx
-        name: nginx
-        ports:
-        - containerPort: 80
-        resources:
-          limits:
-            memory: &quot;2Gi&quot;
-            cpu: &quot;1000m&quot;
-          requests: 
-            memory: &quot;1Gi&quot;
-            cpu: &quot;500m&quot;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f deployment.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;Check the deployment&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get deployments -n namespace-demo
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;create-a-service-and-expose-the-deployment&quot;&gt;Create A Service And Expose The Deployment&lt;/h2&gt;
-
-&lt;p&gt;vim service-demo.yaml&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: nginx
-  name: nginx
-  namespace: namespace-demo
-spec:
-  ports:
-  - nodePort: 31111
-    port: 80	
-    protocol: TCP
-    targetPort: 80
-  selector:
-    app: nginx
-  type: NodePort
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create -f service-demo.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;Now you can see the service created running the following command:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get services  -n namespace-demo
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;connect-to-the-nginx-service&quot;&gt;Connect to the nginx service&lt;/h2&gt;
-&lt;p&gt;To connect 
-http://[kubernete-server-ip]:31111&lt;/p&gt;
-
-&lt;p&gt;##&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-</description>
-        <pubDate>Fri, 12 Feb 2016 00:00:00 +0100</pubDate>
-        <link>/kubernetes/2016/02/12/kubernetes-basic-deployment/</link>
-        <guid isPermaLink="true">/kubernetes/2016/02/12/kubernetes-basic-deployment/</guid>
-        
-        <category>k8s</category>
-        
-        <category>nginx</category>
-        
-        <category>namespace</category>
-        
-        
-        <category>kubernetes</category>
-        
-      </item>
-    
-      <item>
-        <title>Kubernetes Dashboard.</title>
-        <description>&lt;h3 id=&quot;install-kubernetes-dashboard&quot;&gt;Install &lt;strong&gt;kubernetes-dashboard&lt;/strong&gt;.&lt;/h3&gt;
-&lt;p&gt;To install the kubernetes dashboard run the following command on the kubernetes master:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;h3 id=&quot;dashboard-access&quot;&gt;Dashboard Access&lt;/h3&gt;
-&lt;p&gt;To Dashboard access from your local workstation you must create a secure channel to your Kubernetes cluster, for it you need run the following command, remember that you need to have installed in your local machien kubectl and config file in your ~/.kube folder.&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl proxy
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now the channel is open and you can connect to kubernetes Dashboard in:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;login&quot;&gt;Login&lt;/h2&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/k8s-dashboard-login.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Get the credential using this command:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get secrets -n kube-system | grep default-token | awk &#39;{print $1}&#39; | xargs -I &#39;{}&#39; kubectl describe secret {} -n kube-system | grep token: | awk &#39;{print $2}&#39;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;You can get something like this:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pbya56514676
-7J2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUi7
-OiJkZWZhdWx0LXRva2VuLWhncTRtIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImRlZmF1
-bHQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI2OWY1NzA2Ni1mZDkwLTExZTgtOTYxMi1m
-ZTA5YWU5Mjk2OTUiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCJ9.CaTwQ1FxBC4VFGWvjOY9kJ9
-dasdfg6566GG433hhhSEEWksIMOSnALCq4aOvgsg4Se1Zi0AZ5y5bZlaoX8OCKGcfBgtMP_w_BgqFb0OPxANEJMTxf5zfN4DTw57aGsTBbST
-qpvODiXSrBb9d1pxUF9r6kVoCMhh4DpHoUSLEpvuUtE2CSs0Eb6ozAUhWG5nhpA03aKOHNMrC4aXVLp75dJBdjaQBUXYS7IP2DSWTyGVYW0r
-ydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCaWNlaWNlaWNlun_jWoR2Nb
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-</description>
-        <pubDate>Thu, 11 Feb 2016 00:00:00 +0100</pubDate>
-        <link>/k8s/2016/02/11/kubernetes-dashboard/</link>
-        <guid isPermaLink="true">/k8s/2016/02/11/kubernetes-dashboard/</guid>
-        
-        <category>k8s</category>
-        
-        
-        <category>k8s</category>
-        
-      </item>
-    
-      <item>
         <title>Basic kubernetes setup.</title>
         <description>&lt;h2 id=&quot;requirements&quot;&gt;REQUIREMENTS&lt;/h2&gt;
 
@@ -855,39 +1045,6 @@ swarm1#&amp;gt; docker service ps web1
         
         
         <category>docker</category>
-        
-      </item>
-    
-      <item>
-        <title>Docker-Machine Static IP Address.</title>
-        <description>&lt;p&gt;In this case we are going to modify the bootlocal.sh script to use static ip addres in vm generated using docker-machine.&lt;/p&gt;
-
-&lt;h2 id=&quot;static-ip-address&quot;&gt;Static IP Address:&lt;/h2&gt;
-
-&lt;p&gt;Connect to the server and edit the bootlocal.sh file:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine ssh swarm-master1
-vi /var/lib/boot2docker/bootlocal.sh
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;Modify the bootlocal.sh script:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/sh&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;kill cat&lt;/span&gt; /var/run/udhcpc.eth0.pid
-ifconfig eth2 172.26.100.101 netmask 255.255.255.0 up
-&lt;span class=&quot;nb&quot;&gt;kill cat&lt;/span&gt; /var/run/udhcpc.eth1.pid
-ifconfig eth0 192.168.17.101 netmask 255.255.255.0 up
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-</description>
-        <pubDate>Mon, 07 Sep 2015 00:00:00 +0200</pubDate>
-        <link>/kvm/2015/09/07/docker-machine-static-ip/</link>
-        <guid isPermaLink="true">/kvm/2015/09/07/docker-machine-static-ip/</guid>
-        
-        <category>kvm</category>
-        
-        <category>docker</category>
-        
-        <category>docker-machine</category>
-        
-        
-        <category>kvm</category>
         
       </item>
     
