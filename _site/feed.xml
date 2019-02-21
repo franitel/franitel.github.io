@@ -5,8 +5,8 @@
     <description>Un espacio para compartir</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 21 Feb 2019 11:11:59 +0100</pubDate>
-    <lastBuildDate>Thu, 21 Feb 2019 11:11:59 +0100</lastBuildDate>
+    <pubDate>Thu, 21 Feb 2019 11:15:32 +0100</pubDate>
+    <lastBuildDate>Thu, 21 Feb 2019 11:15:32 +0100</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
     
       <item>
@@ -79,7 +79,7 @@ spec:
         <title>kubernetes Credentials and Secrets</title>
         <description>&lt;h2 id=&quot;description&quot;&gt;Description:&lt;/h2&gt;
 
-&lt;p&gt;Hello I’m going to continue with the kubernetes series, and in this post I’m going to create a secret in k8s and give access to this one in a specific pod by 2 ways.&lt;/p&gt;
+&lt;p&gt;Today I’m going to continue with the kubernetes series, and in this post I’m going to create a secret in k8s and give access to this one in a specific pod by 2 ways.&lt;/p&gt;
 
 &lt;p&gt;&lt;em&gt;Steps:&lt;/em&gt;&lt;/p&gt;
 
