@@ -1,0 +1,174 @@
+<p>In this case I’m going to deploy Jenkins
+To do this I’m going to deploy a Jenkins server in a docker container</p>
+
+<h3 id="contents">CONTENTS.</h3>
+<ul>
+  <li>Introduction</li>
+  <li>Environment</li>
+  <li>Deploy Jekins as docker container.</li>
+</ul>
+
+<hr />
+
+<h3 id="introduction">Introduction</h3>
+<p>To deploy our Jenkins I’m going to use docker-compose.
+If you need to install docker compose you can do:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-get install python-pip
+pip install docker-compose
+</code></pre></div></div>
+
+<h3 id="environment">Environment</h3>
+<p>For this example we have a Jenkin server running as docker container listening on 8080 port.</p>
+
+<h3 id="dockerfile">Dockerfile</h3>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#-------------------------------------------------------
+#
+# Dockerfile to building alpine JENKINS with docker inside
+#
+# build via 'docker build -t franitel/jenkins .'
+#
+# Run via 'docker container run -d -p 8080:8080 -v /var/run/docker.sock:/var/run
+#-------------------------------------------------------
+from jenkinsci/blueocean
+MAINTAINER franitel &lt;"franitel@hotmail.com"&gt;
+
+USER root
+RUN apk --no-cache add shadow &amp;&amp; usermod -aG docker jenkins
+RUN apk --no-cache add sudo
+RUN echo "jenkins ALL=(ALL) NOPASSWD: ALL" &gt;&gt; /etc/sudoers
+USER jenkins
+
+</code></pre></div></div>
+<h3 id="build-our-jenkins-server">Build our jenkins server.</h3>
+<p>Download the Dockerfile from my github</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone ..asdf.as.dfa.fas.dfaf
+
+cd build
+
+docker build -t franitel/jenkins .
+</code></pre></div></div>
+
+<h3 id="create-the-docker-composeyml-file">Create the docker-compose.yml file</h3>
+
+<p>Now you can see some files, for now only we need to see the <a href="https://raw.githubusercontent.com/franitel/load-balancer/master/haproxy/docker-compose.yml">docker-compose.yml</a> file</p>
+
+<p>vim docker-compose.yml</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>version: "3"
+
+services:
+  jenkinsblue:
+    image: franitel/jenkins:latest
+    ports:
+      - 8080:8080
+      - 50000:50000
+    volumes:
+      - ./data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+
+</code></pre></div></div>
+
+<p>1) Clone my git repository with all files</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/franitel/load-balancer.git
+</code></pre></div></div>
+<p>2) Go to haproxy folder</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd haproxy
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>haproxy:
+    image: haproxy:1.6
+    volumes:
+        - ./haproxy:/haproxy-override
+        - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    links:
+        - nginx1
+        - nginx2
+        - nginx3
+        - nginx4
+    ports:
+        - "80:80"
+        - "70:70"
+
+nginx1:
+    build: ./web
+    expose:
+        - 80
+nginx2:
+    build: ./web
+    expose:
+        - 80
+nginx3:
+    build: ./web
+    expose:
+        - 80
+nginx4:
+    build: ./web
+    expose:
+        - 80
+</code></pre></div></div>
+<p>Here we can see all our environment
+3) Run the docker-compose command</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose up -d
+</code></pre></div></div>
+<p>4) In http://localhost:70 port you can see the haproxy statistics</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>user:	  user
+password: pass
+</code></pre></div></div>
+
+<p>5) To check that all is working fine you can do:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose ps
+</code></pre></div></div>
+<p>6) Go to http://localhost</p>
+
+<p>Now you can refrest the website (F5) and on each refresch you will see the container hostname in the website, in my case:</p>
+
+<ul>
+  <li>e40c136075cd</li>
+  <li>d282ca09a79e</li>
+  <li>c9e45c1bb0c3</li>
+  <li>41442643aefd</li>
+</ul>
+
+<p>7) Here you have the haproxy.cfg file</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  maxconn 4096
+
+defaults
+  log global
+  mode http
+  option httplog
+  option dontlognull
+  timeout connect 5000ms
+  timeout client 50000ms
+  timeout server 50000ms
+
+listen stats
+  bind 0.0.0.0:70
+  mode http
+  stats enable
+  stats hide-version
+  stats scope .
+  stats realm Haproxy\ Statistics
+  stats uri /
+  stats auth user:pass
+
+frontend balancer
+  bind 0.0.0.0:80
+  mode http
+  default_backend web_backends
+
+backend web_backends
+  mode http
+  option forwardfor
+  balance roundrobin
+  server nginx1 nginx1:80 check
+  server nginx2 nginx2:80 check
+  server nginx3 nginx3:80 check
+  server nginx4 nginx4:80 check
+  option httpchk GET /
+  http-check expect status 200
+
+</code></pre></div></div>

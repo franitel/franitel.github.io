@@ -1,0 +1,52 @@
+<h3 id="requirements">Requirements:</h3>
+<p>For this example you need openshift origin (okd) deployed locally, with access to the oc command.</p>
+
+<hr />
+
+<p>1) Create project (fran-project)</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc new-project fran-project
+</code></pre></div></div>
+
+<p>2) select the project</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc project fran-project
+</code></pre></div></div>
+
+<p>3) Deploy an app in fran-project</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc new-app kubernetes/guestbook --name=guestbook
+</code></pre></div></div>
+
+<p>4) Create route to expose our app</p>
+
+<p>vim route-guestbook.yaml</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: guestbook
+  name: guestbook
+  namespace: fran-project
+  selfLink: /apis/route.openshift.io/v1/namespaces/fran-project/routes/guestbook
+spec:
+  host: guestbook-fran-project.127.0.0.1.nip.io
+  port:
+    targetPort: 3000-tcp
+  to:
+    kind: Service
+    name: guestbook
+    weight: 100
+  wildcardPolicy: None
+</code></pre></div></div>
+<p>Create the route:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create -f route-guestbook.yaml
+</code></pre></div></div>
+
+<p>5) Go to <a href="http://guestbook-fran-project.127.0.0.1.nip.io">http://guestbook-fran-project.127.0.0.1.nip.io</a></p>
+
+<p>then you will see:</p>
+
+<p><img src="/images/2016-04-01-openshift-deploy-app.jpg" alt="" /></p>

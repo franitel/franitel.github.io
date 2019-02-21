@@ -1,0 +1,103 @@
+<p>Today I’m going to start a series of LoadBalancers posts.
+In this first post I’m going to talk about HAPROXY.</p>
+<h3 id="contents">CONTENTS.</h3>
+<ul>
+  <li>Introduction about HAPROXY</li>
+  <li>Environment.</li>
+  <li>Install haproxy.</li>
+  <li>Configure haproxy.cfg</li>
+</ul>
+
+<hr />
+
+<h3 id="introducction">Introducction.</h3>
+<h4 id="definition">Definition:</h4>
+<p>As the haproxy website said:   <strong>haproxy</strong> is an Open Source Software to do Load Balancer
+and Application Delivery Controller.
+What does this mean?, basically you can use haproxy to route traffic regardless of the protocol,
+for example it could provide load balancing to:</p>
+
+<ul>
+  <li><strong>Webservers:</strong> Such as a number of hosts running Apache, nginx, lighttped, etc.</li>
+  <li><strong>Mail servers:</strong> Such as a small pool of hosts running postfix, exim4, qpsmtpd, etc.</li>
+  <li><strong>Arbitrary TCP services:</strong> Such as APIs implemented in go, lua, or node.js.</li>
+</ul>
+
+<h4 id="load-balanching-modes">Load-Balanching <strong>MODES</strong></h4>
+
+<p>There are various different modes, which may be specified via the “balance” directive, in the backend section. 
+The three most common approaches are:</p>
+
+<ul>
+  <li><strong>balance roundrobin:</strong> Distributing each request in turn to the next server.</li>
+  <li><strong>balance leastconn:</strong> Distributing each incoming request to the least loaded backed we have.</li>
+  <li><strong>balance source:</strong>	Distribute each request to a particular server, based upon the hash of the source IP making that request.</li>
+</ul>
+
+<p>The most popular use-case though would be directing traffic to webservers. 
+In this next example I’ll show connections made to a single IP address can be passed to four backend hosts.</p>
+
+<h3 id="environment">Environment</h3>
+<p>The Environment will consist of 2 parts, the FrontEnd and the BackEnd.</p>
+
+<p>The FrontEnd is a machine with haproxy listening on 80 port :</p>
+<ul>
+  <li>haproxy port 80</li>
+</ul>
+
+<p>And The BackEnd are 4 nginx server listening on 8081 8082 8083 8084:</p>
+<ul>
+  <li>nginx1  port 8081</li>
+  <li>nginx2  port 8082</li>
+  <li>nginx3  port 8083</li>
+  <li>nginx4  port 8084</li>
+</ul>
+
+<h3 id="install-haproxy">Install haproxy.</h3>
+<p>In this case we are going to do the setup in Ubuntu:bionic:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt-get update
+sudo apt-get install haproxy
+</code></pre></div></div>
+
+<h3 id="configure-haproxycfg">Configure haproxy.cfg</h3>
+
+<p>sudo vim /etc/haproxy/haproxy.cfg</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>global
+        log     /dev/log    local0
+        log     /dev/log    local1 notice
+        chroot  /var/lib/haproxy
+        user    haproxy
+        group   haproxy
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+
+#
+#  Listen on *:80 - Send traffic to the backend named "nginx"
+#
+frontend www-http
+    bind *:80
+    default_backend nginx
+
+#
+# Back-end definition.
+#
+backend nginx
+    mode http
+    balance roundrobin
+	stick-table type ip size 2000k expire 30m
+	stick on src
+    server nginx1 10.0.0.10:8081 check
+    server nginx2 10.0.0.20:8082 check
+    server nginx3 10.0.0.30:8083 check
+    server nginx4 10.0.0.40:8084 check
+</code></pre></div></div>
+
+<p>In the backend we are specified to use mode http with balance roundrobin, also we have stick-table,
+this is keeping the session between the client and the final server.</p>
+
+<p>In the next post I’ll deploy an haproxy using docker-compose.yml</p>
+
