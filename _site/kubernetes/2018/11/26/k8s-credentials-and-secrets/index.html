@@ -4,7 +4,7 @@
     <head>
 <meta charset="" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Basic kubernetes setup.</title>
+<title>kubernetes Credentials and Secrets</title>
 <meta name="description" content="Un espacio para compartir">
 
 <link rel="profile" href="http://gmpg.org/xfn/11" />
@@ -81,7 +81,7 @@
       </div>
       
 
-      <h1 class="header" itemprop="name">Basic kubernetes setup.</h1>
+      <h1 class="header" itemprop="name">kubernetes Credentials and Secrets</h1>
 
       <div class="author">
         <small><i>
@@ -98,85 +98,141 @@
           <span itemprop="datePublished" content="2014-08-28">
             <!-- Snippet para establecer meses a español -->
             
-            February
+            November
               
-            10
-             , 2016
+            26
+             , 2018
           </span>
-          in k8s category.
+          in kubernetes category.
         </i></small>
       </div>
 
       <div class="read-time">
         <small>
-          1 minuto(s) de lectura
+          2 minuto(s) de lectura
         </small>
       </div>
 
       <div class="content-panel content">
       
         <hr>
-        <span itemprop="articleBody"><h2 id="requirements">REQUIREMENTS</h2>
+        <span itemprop="articleBody"><h2 id="description">Description:</h2>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>* 2 GB or more of RAM per machine.
-* 2 CPUs or more on the master
-* Full network connectivity between all servers.
+<p>Hello I’m going to continue with the kubernetes series, and in this post I’m going to create a secret in k8s and give access to this one in a specific pod by 2 ways.</p>
+
+<p><em>Steps:</em></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1) Create a Secret base64.
+2) Pod with access to the secret through a Volume.
+3) Pod with access to the secret trhough environment variables.
 </code></pre></div></div>
 
-<h2 id="install-kubeadm-on-all-servers-master-and-nodes-ubuntudebian">Install <strong>kubeadm</strong> on all servers (Master and nodes). (ubuntu,debian)</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https curl
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-cat &lt;&lt;EOF &gt;/etc/apt/sources.list.d/kubernetes.list
-deb https://apt.kubernetes.io/ kubernetes-xenial main
-EOF
-apt-get update
-apt-get install -y kubelet kubeadm kubectl
-apt-mark hold kubelet kubeadm kubectl
-reboot
+<hr />
+
+<p><strong>1) Create a Secret base64.</strong></p>
+
+<p>The reason to create the secret on base64 is a way of representing binary data using only printable (text) characters.</p>
+
+<h4 id="create-the-secret">Create the secret</h4>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo -n user | base64
+dXNlcg==
+echo -n password | base64
+cGFzc3dvcmQ=
 </code></pre></div></div>
 
-<h2 id="inicializing-the-master">Inicializing the master</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm init --pod-network-cidr 10.244.0.0/16
+<p>Now we have the user and password in base64 format, in the next step we are going to create this secret in k8s (kubernetes).</p>
+
+<p>vim secret.yaml</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+data:
+  username: dXNlcg==
+  password: cGFzc3dvcmQ=
 </code></pre></div></div>
 
-<h2 id="passthrough-the-credential-to-kubectl">Passthrough the credential to kubectl</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export KUBECONFIG=/etc/kubernetes/admin.conf
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create -f secret.yaml
+</code></pre></div></div>
+<hr />
+<p><strong>2) Pod with access to the secret through a Volume.</strong></p>
+
+<p>vim pod-secret-volume.yaml</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-secret-pod
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+      volumeMounts:
+          # name must match the volume name below
+          - name: secret-volume
+            mountPath: /etc/secret-volume
+  # The secret data is exposed to Containers in the Pod through a Volume.
+  volumes:
+    - name: secret-volume
+      secret:
+        secretName: test-secret
 </code></pre></div></div>
 
-<h2 id="installing-a-pod-network-add-on">Installing a pod network add-on</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/bc79dd1505b0c8681ece4de4c0d86c5cd2643275/Documentation/kube-flannel.yml
+<p>now create the pod:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create -f pod-secret-volume.yaml
 </code></pre></div></div>
 
-<h2 id="join-nodes-to-the-cluster">Join nodes to the cluster</h2>
-<p>When you launched the kubeadm init on master you get the following command:
-   Launch in all nodes:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm join --token=bb12ca.e5bbbedfa0c58788 192.168.0.34
-</code></pre></div></div>
-<p>Change the token and the ip-master by yours.
-If you forgot get the token you can get again using the following command in the master:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm token list
+<p>CHECK THE SECRETS INSIDE POD</p>
 
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl exec -it nginx-secret-pod -- /bin/bash
+root@nginx-secret-pod:/# cd /etc/secret-volume
+root@nginx-secret-:/etc/secret-volume# cat username; echo; cat password; echo
 </code></pre></div></div>
-<h2 id="check-all-nodes-are-joinned">Check all Nodes are joinned:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get nodes
+<p>The output is your username and your password:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>user
+password
+</code></pre></div></div>
+<hr />
+<p><strong>3) Pod with access to the secret trhough environment variables.</strong>
+vim pod-secret-envars.yaml</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-envars-pod
+spec:
+  containers:
+  - name: nginx-envars-container
+    image: nginx
+    env:
+    - name: SECRET_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: test-secret
+          key: username
+    - name: SECRET_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: test-secret
+          key: password
 </code></pre></div></div>
 
-<h2 id="check-that-all-pods-are-working-without-errors">Check that all pods are working without errors:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods --all-namespaces
-</code></pre></div></div>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NAMESPACE   NAME   READY   STATUS    RESTARTS   AGE
+<p>Now create the pod:</p>
 
-ingress-nginx-kubernetes-worker   default-http-backend-kubernetes-worker-7f7f76df64-2kvfc           1/1     Running   17         29d
-ingress-nginx-kubernetes-worker   nginx-ingress-controller-kubernetes-worker-s9g44                  1/1     Running   17         29d
-kube-system                       heapster-v1.6.0-beta.1-865845cbc6-v4xnk                           4/4     Running   68         29d
-kube-system                       kube-dns-8f7866879-lz8x5                                          3/3     Running   52         29d
-kube-system                       kubernetes-dashboard-654cfb4879-r9lms                             1/1     Running   17         29d
-kube-system                       metrics-server-v0.3.1-54b884db75-nfdcp                            2/2     Running   34         29d
-kube-system                       monitoring-influxdb-grafana-v4-5866497777-4pq96                   2/2     Running   34         29d
-kube-system                       tiller-deploy-85686555b8-67bvq                                    1/1     Running   1          13d
-
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create -f pod-secret-envars.yaml
 </code></pre></div></div>
 
+<p>CHECK THE SECRETS INSIDE POD</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl exec -it secret-envars-pod -- /bin/bash
+root@secret-envars-pod:/# printenv
+</code></pre></div></div>
+
+<p>The output is your username and your password:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+SECRET_USERNAME=user
+...
+SECRET_PASSWORD=password
+</code></pre></div></div>
 </span>
         
         
@@ -190,10 +246,10 @@ kube-system                       tiller-deploy-85686555b8-67bvq                
 
         <div class="tags"><small>
           <i class="fa fa-tags"></i>
-            k8s
+            k8s, kubernetes
         </small></div>
         <div class="suggest-edit">
-          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2018-06-10-basic-kubernetes-setup.md" target="_blank"> sugest a review?</a></p>
+          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2018-11-26-k8s-credentials-and-secrets.md" target="_blank"> sugest a review?</a></p>
         </div>
   
       </div>
@@ -229,18 +285,28 @@ kube-system                       tiller-deploy-85686555b8-67bvq                
         <hr />
         <div class="previous previous-next">
           
+          <p>
+            <a href="/kubernetes/2018/06/12/kubernetes-basic-deployment/">kubernetes Basic deployment (namespace and resource limitation)</a>
+          </p>
+          <p class="date">Publicado en 
+          
+            Noviembre
+              
+            26
+             del 2018</p>
+          
         </div>
         <div class="next previous-next">
           
           <p>
-            <a href="/kvm/2016/09/06/docker-machine-with-kvm-driver/">Docker-Machine with kvm driver.</a>
+            <a href="/openshift/2018/12/15/openshift-deploy-app/">Openshift: Create project, Deploy and Expose an APP.</a>
           </p>
           <p class="date">Publicado en 
           
-            Febrero
+            Noviembre
               
-            10
-             del 2016</p>
+            26
+             del 2018</p>
           
         </div>
       </div>

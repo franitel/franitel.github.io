@@ -4,7 +4,7 @@
     <head>
 <meta charset="" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Basic kubernetes setup.</title>
+<title>HAPROXY using docker-compose.</title>
 <meta name="description" content="Un espacio para compartir">
 
 <link rel="profile" href="http://gmpg.org/xfn/11" />
@@ -77,11 +77,11 @@
     <div itemscope itemtype="http://schema.org/Article" class="col-md-12 article">
       
       <div class="thumb">
-        <i class="fa fa-k8s fa-4x"></i>
+        <i class="fa fa-haproxy fa-4x"></i>
       </div>
       
 
-      <h1 class="header" itemprop="name">Basic kubernetes setup.</h1>
+      <h1 class="header" itemprop="name">HAPROXY using docker-compose.</h1>
 
       <div class="author">
         <small><i>
@@ -98,87 +98,201 @@
           <span itemprop="datePublished" content="2014-08-28">
             <!-- Snippet para establecer meses a español -->
             
-            February
+            May
               
-            10
-             , 2016
+            1
+             , 2017
           </span>
-          in k8s category.
+          in loadbalancer category.
         </i></small>
       </div>
 
       <div class="read-time">
         <small>
-          1 minuto(s) de lectura
+          2 minuto(s) de lectura
         </small>
       </div>
 
       <div class="content-panel content">
       
+          This article is part of <i>«LoadBalancers»</i> series:
+          <ol class="series">
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+              <li>
+                
+                  
+                  
+                  <a href="/loadbalancer/2017/04/14/loadbalancer-with-haproxy/">Load Balancing with haproxy.</a>
+                
+              </li>
+            
+          
+            
+              <li>
+                
+                  
+                  HAPROXY using docker-compose.
+                
+              </li>
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          </ol>
+        
         <hr>
-        <span itemprop="articleBody"><h2 id="requirements">REQUIREMENTS</h2>
+        <span itemprop="articleBody"><p>In this second post about LoadBalancers we are going to deploy an haproxy in the easy way.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>* 2 GB or more of RAM per machine.
-* 2 CPUs or more on the master
-* Full network connectivity between all servers.
+<h3 id="contents">CONTENTS.</h3>
+<ul>
+  <li>Introduction</li>
+  <li>Environment</li>
+  <li>Deploy haproxy</li>
+</ul>
+
+<hr />
+
+<h3 id="introduction">Introduction</h3>
+<p>To deploy our haproxy we are going to use docker-compose.
+If you need to install docker compose you can do:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-get install python-pip
+pip install docker-compose
 </code></pre></div></div>
 
-<h2 id="install-kubeadm-on-all-servers-master-and-nodes-ubuntudebian">Install <strong>kubeadm</strong> on all servers (Master and nodes). (ubuntu,debian)</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https curl
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-cat &lt;&lt;EOF &gt;/etc/apt/sources.list.d/kubernetes.list
-deb https://apt.kubernetes.io/ kubernetes-xenial main
-EOF
-apt-get update
-apt-get install -y kubelet kubeadm kubectl
-apt-mark hold kubelet kubeadm kubectl
-reboot
+<h3 id="environment">Environment</h3>
+<p>For this example we have 5 servers:
+1 HAproxy server.
+4 nginx servers.</p>
+
+<p>The HAproxy is listening on port 80, when we recei</p>
+
+<h3 id="deploy-haproxy-with-4-nginx-servers">Deploy haproxy with 4 nginx servers</h3>
+<p>1) Clone my git repository with all files</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/franitel/load-balancer.git
+</code></pre></div></div>
+<p>2) Go to haproxy folder</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd haproxy
+</code></pre></div></div>
+<p>Now you can see some files, for now only we need to see the <a href="https://raw.githubusercontent.com/franitel/load-balancer/master/haproxy/docker-compose.yml">docker-compose.yml</a> file</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>haproxy:
+    image: haproxy:1.6
+    volumes:
+        - ./haproxy:/haproxy-override
+        - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    links:
+        - nginx1
+        - nginx2
+        - nginx3
+        - nginx4
+    ports:
+        - "80:80"
+        - "70:70"
+
+nginx1:
+    build: ./web
+    expose:
+        - 80
+nginx2:
+    build: ./web
+    expose:
+        - 80
+nginx3:
+    build: ./web
+    expose:
+        - 80
+nginx4:
+    build: ./web
+    expose:
+        - 80
+</code></pre></div></div>
+<p>Here we can see all our environment
+3) Run the docker-compose command</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose up -d
+</code></pre></div></div>
+<p>4) In http://localhost:70 port you can see the haproxy statistics</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>user:	  user
+password: pass
 </code></pre></div></div>
 
-<h2 id="inicializing-the-master">Inicializing the master</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm init --pod-network-cidr 10.244.0.0/16
+<p>5) To check that all is working fine you can do:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose ps
 </code></pre></div></div>
+<p>6) Go to http://localhost</p>
 
-<h2 id="passthrough-the-credential-to-kubectl">Passthrough the credential to kubectl</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export KUBECONFIG=/etc/kubernetes/admin.conf
+<p>Now you can refrest the website (F5) and on each refresch you will see the container hostname in the website, in my case:</p>
+
+<ul>
+  <li>e40c136075cd</li>
+  <li>d282ca09a79e</li>
+  <li>c9e45c1bb0c3</li>
+  <li>41442643aefd</li>
+</ul>
+
+<p>7) Here you have the haproxy.cfg file</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+global
+  log 127.0.0.1 local0
+  log 127.0.0.1 local1 notice
+  maxconn 4096
+
+defaults
+  log global
+  mode http
+  option httplog
+  option dontlognull
+  timeout connect 5000ms
+  timeout client 50000ms
+  timeout server 50000ms
+
+listen stats
+  bind 0.0.0.0:70
+  mode http
+  stats enable
+  stats hide-version
+  stats scope .
+  stats realm Haproxy\ Statistics
+  stats uri /
+  stats auth user:pass
+
+frontend balancer
+  bind 0.0.0.0:80
+  mode http
+  default_backend web_backends
+
+backend web_backends
+  mode http
+  option forwardfor
+  balance roundrobin
+  server nginx1 nginx1:80 check
+  server nginx2 nginx2:80 check
+  server nginx3 nginx3:80 check
+  server nginx4 nginx4:80 check
+  option httpchk GET /
+  http-check expect status 200
+
 </code></pre></div></div>
-
-<h2 id="installing-a-pod-network-add-on">Installing a pod network add-on</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/bc79dd1505b0c8681ece4de4c0d86c5cd2643275/Documentation/kube-flannel.yml
-</code></pre></div></div>
-
-<h2 id="join-nodes-to-the-cluster">Join nodes to the cluster</h2>
-<p>When you launched the kubeadm init on master you get the following command:
-   Launch in all nodes:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm join --token=bb12ca.e5bbbedfa0c58788 192.168.0.34
-</code></pre></div></div>
-<p>Change the token and the ip-master by yours.
-If you forgot get the token you can get again using the following command in the master:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm token list
-
-</code></pre></div></div>
-<h2 id="check-all-nodes-are-joinned">Check all Nodes are joinned:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get nodes
-</code></pre></div></div>
-
-<h2 id="check-that-all-pods-are-working-without-errors">Check that all pods are working without errors:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods --all-namespaces
-</code></pre></div></div>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NAMESPACE   NAME   READY   STATUS    RESTARTS   AGE
-
-ingress-nginx-kubernetes-worker   default-http-backend-kubernetes-worker-7f7f76df64-2kvfc           1/1     Running   17         29d
-ingress-nginx-kubernetes-worker   nginx-ingress-controller-kubernetes-worker-s9g44                  1/1     Running   17         29d
-kube-system                       heapster-v1.6.0-beta.1-865845cbc6-v4xnk                           4/4     Running   68         29d
-kube-system                       kube-dns-8f7866879-lz8x5                                          3/3     Running   52         29d
-kube-system                       kubernetes-dashboard-654cfb4879-r9lms                             1/1     Running   17         29d
-kube-system                       metrics-server-v0.3.1-54b884db75-nfdcp                            2/2     Running   34         29d
-kube-system                       monitoring-influxdb-grafana-v4-5866497777-4pq96                   2/2     Running   34         29d
-kube-system                       tiller-deploy-85686555b8-67bvq                                    1/1     Running   1          13d
-
-</code></pre></div></div>
-
 </span>
         
+        
+          
         
 
         
@@ -190,10 +304,10 @@ kube-system                       tiller-deploy-85686555b8-67bvq                
 
         <div class="tags"><small>
           <i class="fa fa-tags"></i>
-            k8s
+            haproxy, loadbalancing
         </small></div>
         <div class="suggest-edit">
-          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2018-06-10-basic-kubernetes-setup.md" target="_blank"> sugest a review?</a></p>
+          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2017-05-01-deploy-haproxy-using-docker-compose.md" target="_blank"> sugest a review?</a></p>
         </div>
   
       </div>
@@ -229,18 +343,28 @@ kube-system                       tiller-deploy-85686555b8-67bvq                
         <hr />
         <div class="previous previous-next">
           
+          <p>
+            <a href="/loadbalancer/2017/04/14/loadbalancer-with-haproxy/">Load Balancing with haproxy.</a>
+          </p>
+          <p class="date">Publicado en 
+          
+            Mayo
+              
+            1
+             del 2017</p>
+          
         </div>
         <div class="next previous-next">
           
           <p>
-            <a href="/kvm/2016/09/06/docker-machine-with-kvm-driver/">Docker-Machine with kvm driver.</a>
+            <a href="/jenkins/2017/05/15/deploy-jenkins-as-container/">Deploy Jenkins using docker-compose.</a>
           </p>
           <p class="date">Publicado en 
           
-            Febrero
+            Mayo
               
-            10
-             del 2016</p>
+            1
+             del 2017</p>
           
         </div>
       </div>

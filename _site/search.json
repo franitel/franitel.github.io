@@ -1,11 +1,19 @@
 [
   
   {
+    "title"    : "Openshift: Create project, Deploy and Expose an APP.",
+    "category" : "",
+    "tags"     : "openshift",
+    "url"      : "/openshift/2018/12/15/openshift-deploy-app/",
+    "date"     : "2018-12-15 00:00:00 +0100"
+    } ,
+    
+  {
     "title"    : "kubernetes Credentials and Secrets",
     "category" : "",
     "tags"     : "k8s, kubernetes",
-    "url"      : "/kubernetes/2018/07/08/k8s-credentials-and-secrets/",
-    "date"     : "2018-07-08 00:00:00 +0200"
+    "url"      : "/kubernetes/2018/11/26/k8s-credentials-and-secrets/",
+    "date"     : "2018-11-26 00:00:00 +0100"
     } ,
     
   {
@@ -25,43 +33,51 @@
     } ,
     
   {
-    "title"    : "Openshift: Create project, Deploy and Expose an APP.",
-    "category" : "",
-    "tags"     : "openshift",
-    "url"      : "/openshift/2018/04/01/openshift-deploy-app/",
-    "date"     : "2018-04-01 00:00:00 +0200"
-    } ,
-    
-  {
     "title"    : "Deploy Jenkins using docker-compose.",
     "category" : "",
     "tags"     : "jenkins, CICD",
-    "url"      : "/jenkins/2016/05/15/deploy-jenkins-as-container/",
-    "date"     : "2016-05-15 00:00:00 +0200"
+    "url"      : "/jenkins/2017/05/15/deploy-jenkins-as-container/",
+    "date"     : "2017-05-15 00:00:00 +0200"
     } ,
     
   {
     "title"    : "HAPROXY using docker-compose.",
     "category" : "",
     "tags"     : "haproxy, loadbalancing",
-    "url"      : "/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/",
-    "date"     : "2016-05-01 00:00:00 +0200"
+    "url"      : "/loadbalancer/2017/05/01/deploy-haproxy-using-docker-compose/",
+    "date"     : "2017-05-01 00:00:00 +0200"
     } ,
     
   {
     "title"    : "Load Balancing with haproxy.",
     "category" : "",
     "tags"     : "haproxy, loadbalancing",
-    "url"      : "/loadbalancer/2016/04/14/loadbalancer-with-haproxy/",
-    "date"     : "2016-04-14 00:00:00 +0200"
+    "url"      : "/loadbalancer/2017/04/14/loadbalancer-with-haproxy/",
+    "date"     : "2017-04-14 00:00:00 +0200"
     } ,
     
   {
-    "title"    : "Openshift pipeline Jenkins",
+    "title"    : "Deploy Docker Swarm cluster multi-master.",
     "category" : "",
-    "tags"     : "openshift, jenkins",
-    "url"      : "/openshift/2016/04/10/openshift-pipeline/",
-    "date"     : "2016-04-10 00:00:00 +0200"
+    "tags"     : "docker, swarm",
+    "url"      : "/docker/2017/01/23/deploy-docker-swarm-cluster/",
+    "date"     : "2017-01-23 00:00:00 +0100"
+    } ,
+    
+  {
+    "title"    : "Docker-Machine Static IP Address.",
+    "category" : "",
+    "tags"     : "kvm, docker, docker-machine",
+    "url"      : "/kvm/2016/09/07/docker-machine-static-ip/",
+    "date"     : "2016-09-07 00:00:00 +0200"
+    } ,
+    
+  {
+    "title"    : "Docker-Machine with kvm driver.",
+    "category" : "",
+    "tags"     : "kvm",
+    "url"      : "/kvm/2016/09/06/docker-machine-with-kvm-driver/",
+    "date"     : "2016-09-06 00:00:00 +0200"
     } ,
     
   {
@@ -69,31 +85,7 @@
     "category" : "",
     "tags"     : "k8s",
     "url"      : "/k8s/2016/02/10/basic-kubernetes-setup/",
-    "date"     : "2016-02-10 14:03:11 +0100"
-    } ,
-    
-  {
-    "title"    : "Deploy Docker Swarm cluster multi-master.",
-    "category" : "",
-    "tags"     : "docker, swarm",
-    "url"      : "/docker/2016/01/23/deploy-docker-swarm-cluster/",
-    "date"     : "2016-01-23 00:00:00 +0100"
-    } ,
-    
-  {
-    "title"    : "Docker-Machine Static IP Address.",
-    "category" : "",
-    "tags"     : "kvm, docker, docker-machine",
-    "url"      : "/kvm/2015/09/07/docker-machine-static-ip/",
-    "date"     : "2015-09-07 00:00:00 +0200"
-    } ,
-    
-  {
-    "title"    : "Docker-Machine with kvm driver.",
-    "category" : "",
-    "tags"     : "kvm",
-    "url"      : "/kvm/2015/09/06/docker-machine-with-kvm-driver/",
-    "date"     : "2015-09-06 00:00:00 +0200"
+    "date"     : "2016-02-10 13:03:11 +0000"
     } 
     
   ]

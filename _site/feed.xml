@@ -5,15 +5,81 @@
     <description>Un espacio para compartir</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 21 Feb 2019 10:45:56 +0100</pubDate>
-    <lastBuildDate>Thu, 21 Feb 2019 10:45:56 +0100</lastBuildDate>
+    <pubDate>Thu, 21 Feb 2019 11:11:59 +0100</pubDate>
+    <lastBuildDate>Thu, 21 Feb 2019 11:11:59 +0100</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
+    
+      <item>
+        <title>Openshift: Create project, Deploy and Expose an APP.</title>
+        <description>&lt;h3 id=&quot;requirements&quot;&gt;Requirements:&lt;/h3&gt;
+&lt;p&gt;For this example you need openshift origin (okd) deployed locally, with access to the oc command.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;1) Create project (fran-project)&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-project fran-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;2) select the project&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc project fran-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;3) Deploy an app in fran-project&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-app kubernetes/guestbook --name=guestbook
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;4) Create route to expose our app&lt;/p&gt;
+
+&lt;p&gt;vim route-guestbook.yaml&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: guestbook
+  name: guestbook
+  namespace: fran-project
+  selfLink: /apis/route.openshift.io/v1/namespaces/fran-project/routes/guestbook
+spec:
+  host: guestbook-fran-project.127.0.0.1.nip.io
+  port:
+    targetPort: 3000-tcp
+  to:
+    kind: Service
+    name: guestbook
+    weight: 100
+  wildcardPolicy: None
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Create the route:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc create -f route-guestbook.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;5) Go to &lt;a href=&quot;http://guestbook-fran-project.127.0.0.1.nip.io&quot;&gt;http://guestbook-fran-project.127.0.0.1.nip.io&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;then you will see:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2016-04-01-openshift-deploy-app.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sat, 15 Dec 2018 00:00:00 +0100</pubDate>
+        <link>/openshift/2018/12/15/openshift-deploy-app/</link>
+        <guid isPermaLink="true">/openshift/2018/12/15/openshift-deploy-app/</guid>
+        
+        <category>openshift</category>
+        
+        
+        <category>openshift</category>
+        
+      </item>
     
       <item>
         <title>kubernetes Credentials and Secrets</title>
         <description>&lt;h2 id=&quot;description&quot;&gt;Description:&lt;/h2&gt;
 
-&lt;p&gt;In this post we are going to create a secret in k8s and give access to this one in a specific pod by 2 ways.&lt;/p&gt;
+&lt;p&gt;Hello I’m going to continue with the kubernetes series, and in this post I’m going to create a secret in k8s and give access to this one in a specific pod by 2 ways.&lt;/p&gt;
 
 &lt;p&gt;&lt;em&gt;Steps:&lt;/em&gt;&lt;/p&gt;
 
@@ -129,9 +195,9 @@ SECRET_USERNAME=user
 SECRET_PASSWORD=password
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
-        <pubDate>Sun, 08 Jul 2018 00:00:00 +0200</pubDate>
-        <link>/kubernetes/2018/07/08/k8s-credentials-and-secrets/</link>
-        <guid isPermaLink="true">/kubernetes/2018/07/08/k8s-credentials-and-secrets/</guid>
+        <pubDate>Mon, 26 Nov 2018 00:00:00 +0100</pubDate>
+        <link>/kubernetes/2018/11/26/k8s-credentials-and-secrets/</link>
+        <guid isPermaLink="true">/kubernetes/2018/11/26/k8s-credentials-and-secrets/</guid>
         
         <category>k8s</category>
         
@@ -340,72 +406,6 @@ ydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVm
       </item>
     
       <item>
-        <title>Openshift: Create project, Deploy and Expose an APP.</title>
-        <description>&lt;h3 id=&quot;requirements&quot;&gt;Requirements:&lt;/h3&gt;
-&lt;p&gt;For this example you need openshift origin (okd) deployed locally, with access to the oc command.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;1) Create project (fran-project)&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-project fran-project
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;2) select the project&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc project fran-project
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;3) Deploy an app in fran-project&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-app kubernetes/guestbook --name=guestbook
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;4) Create route to expose our app&lt;/p&gt;
-
-&lt;p&gt;vim route-guestbook.yaml&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  labels:
-    app: guestbook
-  name: guestbook
-  namespace: fran-project
-  selfLink: /apis/route.openshift.io/v1/namespaces/fran-project/routes/guestbook
-spec:
-  host: guestbook-fran-project.127.0.0.1.nip.io
-  port:
-    targetPort: 3000-tcp
-  to:
-    kind: Service
-    name: guestbook
-    weight: 100
-  wildcardPolicy: None
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;Create the route:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc create -f route-guestbook.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;5) Go to &lt;a href=&quot;http://guestbook-fran-project.127.0.0.1.nip.io&quot;&gt;http://guestbook-fran-project.127.0.0.1.nip.io&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;then you will see:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/2016-04-01-openshift-deploy-app.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-</description>
-        <pubDate>Sun, 01 Apr 2018 00:00:00 +0200</pubDate>
-        <link>/openshift/2018/04/01/openshift-deploy-app/</link>
-        <guid isPermaLink="true">/openshift/2018/04/01/openshift-deploy-app/</guid>
-        
-        <category>openshift</category>
-        
-        
-        <category>openshift</category>
-        
-      </item>
-    
-      <item>
         <title>Deploy Jenkins using docker-compose.</title>
         <description>&lt;p&gt;In this case I’m going to deploy Jenkins
 To do this I’m going to deploy a Jenkins server in a docker container&lt;/p&gt;
@@ -582,9 +582,9 @@ backend web_backends
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
-        <pubDate>Sun, 15 May 2016 00:00:00 +0200</pubDate>
-        <link>/jenkins/2016/05/15/deploy-jenkins-as-container/</link>
-        <guid isPermaLink="true">/jenkins/2016/05/15/deploy-jenkins-as-container/</guid>
+        <pubDate>Mon, 15 May 2017 00:00:00 +0200</pubDate>
+        <link>/jenkins/2017/05/15/deploy-jenkins-as-container/</link>
+        <guid isPermaLink="true">/jenkins/2017/05/15/deploy-jenkins-as-container/</guid>
         
         <category>jenkins</category>
         
@@ -729,9 +729,9 @@ backend web_backends
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
-        <pubDate>Sun, 01 May 2016 00:00:00 +0200</pubDate>
-        <link>/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/</link>
-        <guid isPermaLink="true">/loadbalancer/2016/05/01/deploy-haproxy-using-docker-compose/</guid>
+        <pubDate>Mon, 01 May 2017 00:00:00 +0200</pubDate>
+        <link>/loadbalancer/2017/05/01/deploy-haproxy-using-docker-compose/</link>
+        <guid isPermaLink="true">/loadbalancer/2017/05/01/deploy-haproxy-using-docker-compose/</guid>
         
         <category>haproxy</category>
         
@@ -848,9 +848,9 @@ this is keeping the session between the client and the final server.&lt;/p&gt;
 &lt;p&gt;In the next post I’ll deploy an haproxy using docker-compose.yml&lt;/p&gt;
 
 </description>
-        <pubDate>Thu, 14 Apr 2016 00:00:00 +0200</pubDate>
-        <link>/loadbalancer/2016/04/14/loadbalancer-with-haproxy/</link>
-        <guid isPermaLink="true">/loadbalancer/2016/04/14/loadbalancer-with-haproxy/</guid>
+        <pubDate>Fri, 14 Apr 2017 00:00:00 +0200</pubDate>
+        <link>/loadbalancer/2017/04/14/loadbalancer-with-haproxy/</link>
+        <guid isPermaLink="true">/loadbalancer/2017/04/14/loadbalancer-with-haproxy/</guid>
         
         <category>haproxy</category>
         
@@ -858,126 +858,6 @@ this is keeping the session between the client and the final server.&lt;/p&gt;
         
         
         <category>loadbalancer</category>
-        
-      </item>
-    
-      <item>
-        <title>Openshift pipeline Jenkins</title>
-        <description>&lt;p&gt;In this tutorial we are going to create a jenkins server in openshift and we are going to create a pipeline to build a Docker container using a Dockerfile that is in my franitel.github.com repository.&lt;/p&gt;
-
-&lt;h3 id=&quot;steps&quot;&gt;Steps&lt;/h3&gt;
-
-&lt;p&gt;1) Create project&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc new-project pipeline-project
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;2) Give permissions&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pipeline-project
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;3) Deploy a Jenkins app&lt;/p&gt;
-
-&lt;p&gt;4) create the pipeline.&lt;/p&gt;
-
-&lt;p&gt;5) build the project.&lt;/p&gt;
-
-&lt;h2 id=&quot;install-docker-machine&quot;&gt;Install Docker-Machine:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -L https://github.com/~machine-$(uname -s)-$(uname -m)
-chmod +x /tmp/docker-machine &amp;amp;&amp;amp;
-sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;https://www.youtube.com/watch?v=07-Xx73y3zA&lt;/p&gt;
-
-&lt;p&gt;https://github.com/franitel/openshift/tree/master/pipeline-example&lt;/p&gt;
-</description>
-        <pubDate>Sun, 10 Apr 2016 00:00:00 +0200</pubDate>
-        <link>/openshift/2016/04/10/openshift-pipeline/</link>
-        <guid isPermaLink="true">/openshift/2016/04/10/openshift-pipeline/</guid>
-        
-        <category>openshift</category>
-        
-        <category>jenkins</category>
-        
-        
-        <category>openshift</category>
-        
-      </item>
-    
-      <item>
-        <title>Basic kubernetes setup.</title>
-        <description>&lt;h2 id=&quot;requirements&quot;&gt;REQUIREMENTS&lt;/h2&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;* 2 GB or more of RAM per machine.
-* 2 CPUs or more on the master
-* Full network connectivity between all servers.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;install-kubeadm-on-all-servers-master-and-nodes-ubuntudebian&quot;&gt;Install &lt;strong&gt;kubeadm&lt;/strong&gt; on all servers (Master and nodes). (ubuntu,debian)&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-get update &amp;amp;&amp;amp; apt-get install -y apt-transport-https curl
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-cat &amp;lt;&amp;lt;EOF &amp;gt;/etc/apt/sources.list.d/kubernetes.list
-deb https://apt.kubernetes.io/ kubernetes-xenial main
-EOF
-apt-get update
-apt-get install -y kubelet kubeadm kubectl
-apt-mark hold kubelet kubeadm kubectl
-reboot
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;inicializing-the-master&quot;&gt;Inicializing the master&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubeadm init --pod-network-cidr 10.244.0.0/16
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;passthrough-the-credential-to-kubectl&quot;&gt;Passthrough the credential to kubectl&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;export KUBECONFIG=/etc/kubernetes/admin.conf
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;installing-a-pod-network-add-on&quot;&gt;Installing a pod network add-on&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/bc79dd1505b0c8681ece4de4c0d86c5cd2643275/Documentation/kube-flannel.yml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;join-nodes-to-the-cluster&quot;&gt;Join nodes to the cluster&lt;/h2&gt;
-&lt;p&gt;When you launched the kubeadm init on master you get the following command:
-   Launch in all nodes:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubeadm join --token=bb12ca.e5bbbedfa0c58788 192.168.0.34
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;Change the token and the ip-master by yours.
-If you forgot get the token you can get again using the following command in the master:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubeadm token list
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;h2 id=&quot;check-all-nodes-are-joinned&quot;&gt;Check all Nodes are joinned:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get nodes
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;check-that-all-pods-are-working-without-errors&quot;&gt;Check that all pods are working without errors:&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get pods --all-namespaces
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;NAMESPACE   NAME   READY   STATUS    RESTARTS   AGE
-
-ingress-nginx-kubernetes-worker   default-http-backend-kubernetes-worker-7f7f76df64-2kvfc           1/1     Running   17         29d
-ingress-nginx-kubernetes-worker   nginx-ingress-controller-kubernetes-worker-s9g44                  1/1     Running   17         29d
-kube-system                       heapster-v1.6.0-beta.1-865845cbc6-v4xnk                           4/4     Running   68         29d
-kube-system                       kube-dns-8f7866879-lz8x5                                          3/3     Running   52         29d
-kube-system                       kubernetes-dashboard-654cfb4879-r9lms                             1/1     Running   17         29d
-kube-system                       metrics-server-v0.3.1-54b884db75-nfdcp                            2/2     Running   34         29d
-kube-system                       monitoring-influxdb-grafana-v4-5866497777-4pq96                   2/2     Running   34         29d
-kube-system                       tiller-deploy-85686555b8-67bvq                                    1/1     Running   1          13d
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-</description>
-        <pubDate>Wed, 10 Feb 2016 14:03:11 +0100</pubDate>
-        <link>/k8s/2016/02/10/basic-kubernetes-setup/</link>
-        <guid isPermaLink="true">/k8s/2016/02/10/basic-kubernetes-setup/</guid>
-        
-        <category>k8s</category>
-        
-        
-        <category>k8s</category>
         
       </item>
     
@@ -1035,9 +915,9 @@ swarm1#&amp;gt; docker service ps web1
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 </description>
-        <pubDate>Sat, 23 Jan 2016 00:00:00 +0100</pubDate>
-        <link>/docker/2016/01/23/deploy-docker-swarm-cluster/</link>
-        <guid isPermaLink="true">/docker/2016/01/23/deploy-docker-swarm-cluster/</guid>
+        <pubDate>Mon, 23 Jan 2017 00:00:00 +0100</pubDate>
+        <link>/docker/2017/01/23/deploy-docker-swarm-cluster/</link>
+        <guid isPermaLink="true">/docker/2017/01/23/deploy-docker-swarm-cluster/</guid>
         
         <category>docker</category>
         
@@ -1045,6 +925,70 @@ swarm1#&amp;gt; docker service ps web1
         
         
         <category>docker</category>
+        
+      </item>
+    
+      <item>
+        <title>Docker-Machine Static IP Address.</title>
+        <description>&lt;p&gt;In this case we are going to modify the bootlocal.sh script to use static ip addres in vm generated using docker-machine.&lt;/p&gt;
+
+&lt;h2 id=&quot;static-ip-address&quot;&gt;Static IP Address:&lt;/h2&gt;
+
+&lt;p&gt;Connect to the server and edit the bootlocal.sh file:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine ssh swarm-master1
+vi /var/lib/boot2docker/bootlocal.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Modify the bootlocal.sh script:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/sh&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;kill cat&lt;/span&gt; /var/run/udhcpc.eth0.pid
+ifconfig eth2 172.26.100.101 netmask 255.255.255.0 up
+&lt;span class=&quot;nb&quot;&gt;kill cat&lt;/span&gt; /var/run/udhcpc.eth1.pid
+ifconfig eth0 192.168.17.101 netmask 255.255.255.0 up
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Wed, 07 Sep 2016 00:00:00 +0200</pubDate>
+        <link>/kvm/2016/09/07/docker-machine-static-ip/</link>
+        <guid isPermaLink="true">/kvm/2016/09/07/docker-machine-static-ip/</guid>
+        
+        <category>kvm</category>
+        
+        <category>docker</category>
+        
+        <category>docker-machine</category>
+        
+        
+        <category>kvm</category>
+        
+      </item>
+    
+      <item>
+        <title>Docker-Machine with kvm driver.</title>
+        <description>&lt;h2 id=&quot;install-docker-machine&quot;&gt;Install Docker-Machine:&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -L https://github.com/docker/machine/releases/download/v0.15.0/docker-machine-$(uname -s)-$(uname -m)
+chmod +x /tmp/docker-machine &amp;amp;&amp;amp;
+sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;install-kvm-driver&quot;&gt;Install kvm driver:&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.7.0/docker-machine-driver -o /usr/local/bin/docker-machine-driver-kvm
+sudo chmod +x /usr/local/bin/docker-machine-driver-kvm
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;create-vm&quot;&gt;Create VM:&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine create -d kvm dm-swarm1
+docker-machine create -d kvm dm-swarm2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;connect-to-vm&quot;&gt;Connect to VM&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker-machine ssh dm-swarm1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Tue, 06 Sep 2016 00:00:00 +0200</pubDate>
+        <link>/kvm/2016/09/06/docker-machine-with-kvm-driver/</link>
+        <guid isPermaLink="true">/kvm/2016/09/06/docker-machine-with-kvm-driver/</guid>
+        
+        <category>kvm</category>
+        
+        
+        <category>kvm</category>
         
       </item>
     

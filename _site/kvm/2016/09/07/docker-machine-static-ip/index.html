@@ -4,7 +4,7 @@
     <head>
 <meta charset="" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Basic kubernetes setup.</title>
+<title>Docker-Machine Static IP Address.</title>
 <meta name="description" content="Un espacio para compartir">
 
 <link rel="profile" href="http://gmpg.org/xfn/11" />
@@ -77,11 +77,11 @@
     <div itemscope itemtype="http://schema.org/Article" class="col-md-12 article">
       
       <div class="thumb">
-        <i class="fa fa-k8s fa-4x"></i>
+        <i class="fa fa-kvm fa-4x"></i>
       </div>
       
 
-      <h1 class="header" itemprop="name">Basic kubernetes setup.</h1>
+      <h1 class="header" itemprop="name">Docker-Machine Static IP Address.</h1>
 
       <div class="author">
         <small><i>
@@ -98,12 +98,12 @@
           <span itemprop="datePublished" content="2014-08-28">
             <!-- Snippet para establecer meses a español -->
             
-            February
+            September
               
-            10
+            7
              , 2016
           </span>
-          in k8s category.
+          in kvm category.
         </i></small>
       </div>
 
@@ -116,67 +116,21 @@
       <div class="content-panel content">
       
         <hr>
-        <span itemprop="articleBody"><h2 id="requirements">REQUIREMENTS</h2>
+        <span itemprop="articleBody"><p>In this case we are going to modify the bootlocal.sh script to use static ip addres in vm generated using docker-machine.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>* 2 GB or more of RAM per machine.
-* 2 CPUs or more on the master
-* Full network connectivity between all servers.
+<h2 id="static-ip-address">Static IP Address:</h2>
+
+<p>Connect to the server and edit the bootlocal.sh file:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-machine ssh swarm-master1
+vi /var/lib/boot2docker/bootlocal.sh
 </code></pre></div></div>
-
-<h2 id="install-kubeadm-on-all-servers-master-and-nodes-ubuntudebian">Install <strong>kubeadm</strong> on all servers (Master and nodes). (ubuntu,debian)</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https curl
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-cat &lt;&lt;EOF &gt;/etc/apt/sources.list.d/kubernetes.list
-deb https://apt.kubernetes.io/ kubernetes-xenial main
-EOF
-apt-get update
-apt-get install -y kubelet kubeadm kubectl
-apt-mark hold kubelet kubeadm kubectl
-reboot
+<p>Modify the bootlocal.sh script:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+<span class="nb">kill cat</span> /var/run/udhcpc.eth0.pid
+ifconfig eth2 172.26.100.101 netmask 255.255.255.0 up
+<span class="nb">kill cat</span> /var/run/udhcpc.eth1.pid
+ifconfig eth0 192.168.17.101 netmask 255.255.255.0 up
 </code></pre></div></div>
-
-<h2 id="inicializing-the-master">Inicializing the master</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm init --pod-network-cidr 10.244.0.0/16
-</code></pre></div></div>
-
-<h2 id="passthrough-the-credential-to-kubectl">Passthrough the credential to kubectl</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export KUBECONFIG=/etc/kubernetes/admin.conf
-</code></pre></div></div>
-
-<h2 id="installing-a-pod-network-add-on">Installing a pod network add-on</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/bc79dd1505b0c8681ece4de4c0d86c5cd2643275/Documentation/kube-flannel.yml
-</code></pre></div></div>
-
-<h2 id="join-nodes-to-the-cluster">Join nodes to the cluster</h2>
-<p>When you launched the kubeadm init on master you get the following command:
-   Launch in all nodes:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm join --token=bb12ca.e5bbbedfa0c58788 192.168.0.34
-</code></pre></div></div>
-<p>Change the token and the ip-master by yours.
-If you forgot get the token you can get again using the following command in the master:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm token list
-
-</code></pre></div></div>
-<h2 id="check-all-nodes-are-joinned">Check all Nodes are joinned:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get nodes
-</code></pre></div></div>
-
-<h2 id="check-that-all-pods-are-working-without-errors">Check that all pods are working without errors:</h2>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods --all-namespaces
-</code></pre></div></div>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NAMESPACE   NAME   READY   STATUS    RESTARTS   AGE
-
-ingress-nginx-kubernetes-worker   default-http-backend-kubernetes-worker-7f7f76df64-2kvfc           1/1     Running   17         29d
-ingress-nginx-kubernetes-worker   nginx-ingress-controller-kubernetes-worker-s9g44                  1/1     Running   17         29d
-kube-system                       heapster-v1.6.0-beta.1-865845cbc6-v4xnk                           4/4     Running   68         29d
-kube-system                       kube-dns-8f7866879-lz8x5                                          3/3     Running   52         29d
-kube-system                       kubernetes-dashboard-654cfb4879-r9lms                             1/1     Running   17         29d
-kube-system                       metrics-server-v0.3.1-54b884db75-nfdcp                            2/2     Running   34         29d
-kube-system                       monitoring-influxdb-grafana-v4-5866497777-4pq96                   2/2     Running   34         29d
-kube-system                       tiller-deploy-85686555b8-67bvq                                    1/1     Running   1          13d
-
-</code></pre></div></div>
-
 </span>
         
         
@@ -190,10 +144,10 @@ kube-system                       tiller-deploy-85686555b8-67bvq                
 
         <div class="tags"><small>
           <i class="fa fa-tags"></i>
-            k8s
+            kvm, docker, docker-machine
         </small></div>
         <div class="suggest-edit">
-          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2018-06-10-basic-kubernetes-setup.md" target="_blank"> sugest a review?</a></p>
+          <p>¿Do you see an error in this article, why do you <a href="https://github.com/franitel/franitel.github.io/tree/master/_posts/2016-09-07-docker-machine-static-ip.md" target="_blank"> sugest a review?</a></p>
         </div>
   
       </div>
@@ -229,17 +183,27 @@ kube-system                       tiller-deploy-85686555b8-67bvq                
         <hr />
         <div class="previous previous-next">
           
-        </div>
-        <div class="next previous-next">
-          
           <p>
             <a href="/kvm/2016/09/06/docker-machine-with-kvm-driver/">Docker-Machine with kvm driver.</a>
           </p>
           <p class="date">Publicado en 
           
-            Febrero
+            Septiembre
               
-            10
+            7
+             del 2016</p>
+          
+        </div>
+        <div class="next previous-next">
+          
+          <p>
+            <a href="/docker/2017/01/23/deploy-docker-swarm-cluster/">Deploy Docker Swarm cluster multi-master.</a>
+          </p>
+          <p class="date">Publicado en 
+          
+            Septiembre
+              
+            7
              del 2016</p>
           
         </div>
