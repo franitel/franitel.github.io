@@ -43,7 +43,7 @@ For this example we have a Jenkin server running as docker container listening o
 # Run via 'docker container run -d -p 8080:8080 -v /var/run/docker.sock:/var/run
 #-------------------------------------------------------
 from jenkinsci/blueocean
-MAINTAINER franitel <"franitel@hotmail.com">
+MAINTAINER franitel <"franitel@gmx.com">
 
 USER root
 RUN apk --no-cache add shadow && usermod -aG docker jenkins

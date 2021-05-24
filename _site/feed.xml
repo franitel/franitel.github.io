@@ -439,7 +439,7 @@ pip install docker-compose
 # Run via &#39;docker container run -d -p 8080:8080 -v /var/run/docker.sock:/var/run
 #-------------------------------------------------------
 from jenkinsci/blueocean
-MAINTAINER franitel &amp;lt;&quot;franitel@hotmail.com&quot;&amp;gt;
+MAINTAINER franitel &amp;lt;&quot;franitel@gmx.com&quot;&amp;gt;
 
 USER root
 RUN apk --no-cache add shadow &amp;amp;&amp;amp; usermod -aG docker jenkins
